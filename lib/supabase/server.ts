@@ -24,6 +24,11 @@ export async function createClient() {
     SUPABASE_URL,
     SUPABASE_ANON_KEY,
     {
+      // Must match the browser client's cookieOptions.name in
+      // lib/supabase/client.ts — see the comment there for why (this app
+      // and warehouse-tracker share the same gearroom Supabase backend and
+      // must agree on the same fixed cookie name).
+      cookieOptions: { name: "sb-gearroom-auth-token" },
       cookies: {
         getAll() {
           return cookieStore.getAll();
