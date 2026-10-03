@@ -2,37 +2,26 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-
-export type CreateCheckoutInput = {
-  projectName: string;
-  renterName: string;
-  dueDate: string;
-  equipmentIds: number[];
-};
+import { dbErrorMessage } from "@/lib/supabase/errors";
+import { parseInput } from "@/lib/validation";
+import { barcodeSchema } from "@/lib/schemas/common";
+import { createCheckoutSchema, type CreateCheckoutInput } from "@/lib/schemas/checkout";
 
 export async function createCheckout(input: CreateCheckoutInput) {
-  if (!input.projectName.trim() || !input.renterName.trim() || !input.dueDate) {
-    return { error: "Project, renter, and due date are required." };
-  }
-  if (input.equipmentIds.length === 0) {
-    return { error: "Scan at least one item before checking out." };
-  }
-
-  const dueDate = new Date(input.dueDate);
-  if (Number.isNaN(dueDate.getTime())) {
-    return { error: "Due date is invalid." };
-  }
+  const parsed = parseInput(createCheckoutSchema, input);
+  if (!parsed.ok) return { error: parsed.error };
+  const { projectName, renterName, dueDate, equipmentIds } = parsed.data;
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("create_checkout", {
-    p_project_name: input.projectName.trim(),
-    p_renter_name: input.renterName.trim(),
-    p_due_date: dueDate.toISOString(),
-    p_equipment_ids: input.equipmentIds,
+    p_project_name: projectName,
+    p_renter_name: renterName,
+    p_due_date: new Date(dueDate).toISOString(),
+    p_equipment_ids: equipmentIds,
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: dbErrorMessage(error, "Couldn't create the checkout. Try again.") };
   }
 
   revalidatePath("/manager");
@@ -45,13 +34,14 @@ export async function createCheckout(input: CreateCheckoutInput) {
 }
 
 export async function returnByBarcode(barcode: string) {
+  const parsed = parseInput(barcodeSchema, barcode);
+  if (!parsed.ok) return { error: "Scan or type a barcode to return." };
+
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .rpc("return_by_barcode", { p_barcode: barcode.trim() })
-    .single();
+  const { data, error } = await supabase.rpc("return_by_barcode", { p_barcode: parsed.data }).single();
 
   if (error) {
-    return { error: error.message };
+    return { error: dbErrorMessage(error, "Couldn't process that return. Try again.") };
   }
 
   revalidatePath("/manager");

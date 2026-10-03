@@ -3,10 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getEquipmentByBarcode } from "@/lib/supabase/queries";
+import { dbErrorMessage } from "@/lib/supabase/errors";
 import { authorize } from "@/lib/auth/session";
 import { OWNER_ONLY, STAFF } from "@/lib/auth/roles";
 import { identifyEquipmentPhoto, type EquipmentPhotoSuggestion } from "@/lib/vision";
 import { findStockImage } from "@/lib/image-search";
+import { userMessage } from "@/lib/errors";
+import { parseForm, parseInput } from "@/lib/validation";
+import { barcodeSchema, categorySchema } from "@/lib/schemas/common";
+import {
+  addEquipmentSchema,
+  equipmentStatusSchema,
+  identifyPhotoSchema,
+  stockImageQuerySchema,
+  updateEquipmentSchema,
+} from "@/lib/schemas/equipment";
 import type { EquipmentCategory } from "@/lib/supabase/types";
 
 export type EquipmentFormState = {
@@ -14,11 +25,6 @@ export type EquipmentFormState = {
   success?: boolean;
   message?: string;
 };
-
-const CATEGORIES = ["camera", "lighting", "grip"] as const;
-
-const MIN_QUANTITY = 1;
-const MAX_QUANTITY = 100;
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -32,43 +38,28 @@ export async function addEquipment(
     return { error: "Only staff can add equipment." };
   }
 
-  const name = String(formData.get("name") ?? "").trim();
-  const category = String(formData.get("category") ?? "camera");
-  const description = String(formData.get("description") ?? "").trim();
-  const serialNumber = String(formData.get("serialNumber") ?? "").trim();
-  const imageUrl = String(formData.get("imageUrl") ?? "").trim();
-  const barcode = String(formData.get("barcode") ?? "").trim();
-  const quantityRaw = String(formData.get("quantity") ?? "").trim();
-  const quantity = quantityRaw === "" ? 1 : Number.parseInt(quantityRaw, 10);
-
-  if (!name) {
-    return { error: "Name is required." };
-  }
-  if (!CATEGORIES.includes(category as (typeof CATEGORIES)[number])) {
-    return { error: "Pick a valid category." };
-  }
-  if (!Number.isFinite(quantity) || quantity < MIN_QUANTITY || quantity > MAX_QUANTITY) {
-    return { error: `Quantity must be a whole number between ${MIN_QUANTITY} and ${MAX_QUANTITY}.` };
-  }
+  const parsed = parseForm(addEquipmentSchema, formData);
+  if (!parsed.ok) return { error: parsed.error };
+  const { name, category, description, serialNumber, imageUrl, barcode, quantity } = parsed.data;
 
   const supabase = await createClient();
-  const extraFields = { description: description || null, serial_number: serialNumber || null, image_url: imageUrl || null };
+  const extraFields = { description, serial_number: serialNumber, image_url: imageUrl };
 
   // No barcode given: mint one from the per-category sequence (the photo-add
   // flow always takes this path, one item at a time).
   if (!barcode) {
     const { data: generated, error: barcodeError } = await supabase.rpc("next_equipment_barcode", {
-      p_category: category as EquipmentCategory,
+      p_category: category,
     });
-    if (barcodeError) return { error: barcodeError.message };
+    if (barcodeError) return { error: dbErrorMessage(barcodeError, "Couldn't generate a barcode. Try again.") };
 
     const { error } = await supabase.from("equipment").insert({
       barcode: generated as string,
       name,
-      category: category as EquipmentCategory,
+      category,
       ...extraFields,
     });
-    if (error) return { error: error.message };
+    if (error) return { error: dbErrorMessage(error, "Couldn't add the item. Try again.") };
 
     revalidatePath("/owner/inventory");
     return { success: true };
@@ -85,12 +76,12 @@ export async function addEquipment(
     const { error } = await supabase.from("equipment").insert({
       barcode,
       name,
-      category: category as EquipmentCategory,
+      category,
       ...extraFields,
     });
 
     if (error) {
-      return { error: error.message };
+      return { error: dbErrorMessage(error, "Couldn't add the item. Try again.") };
     }
 
     revalidatePath("/owner/inventory");
@@ -107,7 +98,7 @@ export async function addEquipment(
     .ilike("barcode", `${prefix}-%`);
 
   if (lookupError) {
-    return { error: lookupError.message };
+    return { error: dbErrorMessage(lookupError, "Couldn't check existing barcodes. Try again.") };
   }
 
   const suffixPattern = new RegExp(`^${escapeRegExp(prefix)}-(\\d+)$`, "i");
@@ -126,14 +117,14 @@ export async function addEquipment(
   const rows = newBarcodes.map((code) => ({
     barcode: code,
     name,
-    category: category as EquipmentCategory,
+    category,
     ...extraFields,
   }));
 
   const { error: insertError } = await supabase.from("equipment").insert(rows);
 
   if (insertError) {
-    return { error: insertError.message };
+    return { error: dbErrorMessage(insertError, "Couldn't add the items. Try again.") };
   }
 
   revalidatePath("/owner/inventory");
@@ -151,35 +142,18 @@ export async function updateEquipment(
     return { error: "Only the owner can edit equipment." };
   }
 
-  const equipmentId = Number(formData.get("equipmentId"));
-  const name = String(formData.get("name") ?? "").trim();
-  const category = String(formData.get("category") ?? "");
-  const serialNumber = String(formData.get("serialNumber") ?? "").trim();
-  const imageUrl = String(formData.get("imageUrl") ?? "").trim();
-
-  if (!Number.isInteger(equipmentId)) {
-    return { error: "Invalid equipment." };
-  }
-  if (!name) {
-    return { error: "Name is required." };
-  }
-  if (!CATEGORIES.includes(category as (typeof CATEGORIES)[number])) {
-    return { error: "Pick a valid category." };
-  }
+  const parsed = parseForm(updateEquipmentSchema, formData);
+  if (!parsed.ok) return { error: parsed.error };
+  const { equipmentId, name, category, serialNumber, imageUrl } = parsed.data;
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("equipment")
-    .update({
-      name,
-      category: category as EquipmentCategory,
-      serial_number: serialNumber || null,
-      image_url: imageUrl || null,
-    })
+    .update({ name, category, serial_number: serialNumber, image_url: imageUrl })
     .eq("id", equipmentId);
 
   if (error) {
-    return { error: error.message };
+    return { error: dbErrorMessage(error, "Couldn't save your changes. Try again.") };
   }
 
   revalidatePath("/owner/inventory");
@@ -191,16 +165,25 @@ export async function setEquipmentStatus(equipmentId: number, status: "available
     throw new Error("Only the owner can update equipment status.");
   }
 
+  // The TypeScript union above isn't enforced at runtime: a client can send
+  // any value, including "checked_out", which only a checkout may set.
+  const parsed = parseInput(equipmentStatusSchema, { equipmentId, status });
+  if (!parsed.ok) throw new Error("Invalid request.");
+
   const supabase = await createClient();
-  const { error } = await supabase.from("equipment").update({ status }).eq("id", equipmentId);
-  if (error) throw error;
+  const { error } = await supabase
+    .from("equipment")
+    .update({ status: parsed.data.status })
+    .eq("id", parsed.data.equipmentId);
+  if (error) throw new Error(dbErrorMessage(error, "Couldn't update the status."));
 
   revalidatePath("/owner/inventory");
   revalidatePath("/owner");
 }
 
 export async function lookupBarcode(barcode: string) {
-  return getEquipmentByBarcode(barcode.trim());
+  const parsed = parseInput(barcodeSchema, barcode);
+  return parsed.ok ? getEquipmentByBarcode(parsed.data) : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -219,22 +202,17 @@ export async function identifyPhoto(formData: FormData): Promise<PhotoIdentifyRe
     return { error: "Only staff can add equipment." };
   }
 
-  const file = formData.get("photo");
-  if (!(file instanceof File) || file.size === 0) {
-    return { error: "No photo was uploaded." };
-  }
-  if (!file.type.startsWith("image/")) {
-    return { error: "That file isn't an image." };
-  }
+  const parsed = parseForm(identifyPhotoSchema, formData);
+  if (!parsed.ok) return { error: parsed.error };
+  const { photo } = parsed.data;
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const base64 = buffer.toString("base64");
+  const base64 = Buffer.from(await photo.arrayBuffer()).toString("base64");
 
   let suggestion: EquipmentPhotoSuggestion;
   try {
-    suggestion = await identifyEquipmentPhoto(base64, file.type);
+    suggestion = await identifyEquipmentPhoto(base64, photo.type);
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Couldn't identify the photo." };
+    return { error: userMessage(error, "Couldn't identify the photo. Try again, or add the item manually.") };
   }
 
   const stockImageUrl = await findStockImage(suggestion.name).catch(() => null);
@@ -246,7 +224,10 @@ export async function searchStockImage(name: string): Promise<{ imageUrl: string
   if (!(await authorize(STAFF))) {
     throw new Error("Only staff can add equipment.");
   }
-  const imageUrl = await findStockImage(name).catch(() => null);
+  const parsed = parseInput(stockImageQuerySchema, name);
+  if (!parsed.ok) return { imageUrl: null };
+
+  const imageUrl = await findStockImage(parsed.data).catch(() => null);
   return { imageUrl };
 }
 
@@ -254,8 +235,11 @@ export async function previewNextBarcode(category: EquipmentCategory): Promise<{
   if (!(await authorize(STAFF))) {
     throw new Error("Only staff can add equipment.");
   }
+  const parsed = parseInput(categorySchema, category);
+  if (!parsed.ok) throw new Error(parsed.error);
+
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("next_equipment_barcode", { p_category: category });
-  if (error) throw error;
+  const { data, error } = await supabase.rpc("next_equipment_barcode", { p_category: parsed.data });
+  if (error) throw new Error(dbErrorMessage(error, "Couldn't reserve a barcode."));
   return { barcode: data as string };
 }

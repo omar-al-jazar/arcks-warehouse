@@ -1,5 +1,9 @@
 import "server-only";
 import type { EquipmentCategory } from "@/lib/supabase/types";
+import { getGeminiApiKey } from "@/lib/env";
+import { UserError } from "@/lib/errors";
+
+const TRY_AGAIN = "Try again, or add the item manually.";
 
 export type EquipmentPhotoSuggestion = {
   name: string;
@@ -22,9 +26,9 @@ export async function identifyEquipmentPhoto(
   imageBase64: string,
   mediaType: string
 ): Promise<EquipmentPhotoSuggestion> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not configured.");
+    throw new UserError("Photo identification isn't set up on this server yet.");
   }
 
   const response = await fetch(
@@ -47,13 +51,15 @@ export async function identifyEquipmentPhoto(
 
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
-    throw new Error(`Vision API request failed (${response.status}): ${detail.slice(0, 200)}`);
+    console.error(`[vision] request failed (${response.status}): ${detail.slice(0, 200)}`);
+    throw new UserError(`Couldn't reach the photo-identification service. ${TRY_AGAIN}`);
   }
 
   const data = await response.json();
   const text: string | undefined = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) {
-    throw new Error("Vision API returned no text content.");
+    console.error("[vision] response had no text content");
+    throw new UserError(`Couldn't identify that photo. ${TRY_AGAIN}`);
   }
 
   // Gemini sometimes wraps JSON in markdown fences despite the prompt asking
@@ -64,7 +70,8 @@ export async function identifyEquipmentPhoto(
   try {
     parsed = JSON.parse(cleaned);
   } catch {
-    throw new Error("Vision API response wasn't valid JSON.");
+    console.error("[vision] response wasn't valid JSON:", cleaned.slice(0, 200));
+    throw new UserError(`Couldn't identify that photo. ${TRY_AGAIN}`);
   }
 
   const category = VALID_CATEGORIES.includes(parsed.category as EquipmentCategory)

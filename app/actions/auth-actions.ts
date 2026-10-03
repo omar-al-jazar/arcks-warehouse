@@ -2,7 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { homeFor, isStaffRole } from "@/lib/auth/roles";
+import { homeFor } from "@/lib/auth/roles";
+import { parseForm } from "@/lib/validation";
+import { changePinSchema, loginSchema } from "@/lib/schemas/auth";
 
 export type LoginState = {
   error?: string;
@@ -15,17 +17,9 @@ export async function login(
   _prevState: LoginState,
   formData: FormData
 ): Promise<LoginState> {
-  const role = formData.get("role");
-  const pin = formData.get("pin");
-  const next = formData.get("next");
-
-  if (
-    !isStaffRole(role) ||
-    typeof pin !== "string" ||
-    pin.length < 6
-  ) {
-    return { error: "Enter your 6-digit PIN to continue." };
-  }
+  const parsed = parseForm(loginSchema, formData);
+  if (!parsed.ok) return { error: parsed.error };
+  const { role, pin, next } = parsed.data;
 
   // The lock screen only shows one "Manager" / "Owner" tile, but multiple
   // named accounts can share a role (e.g. several managers on a growing
@@ -51,7 +45,7 @@ export async function login(
     return { error: "That PIN wasn't recognized." };
   }
 
-  const destination = typeof next === "string" && next.startsWith("/") ? next : homeFor(role);
+  const destination = next?.startsWith("/") ? next : homeFor(role);
 
   // Checked server-side via Supabase (a SECURITY DEFINER RPC scoped to
   // auth.uid(), see migration 0005) rather than trusted from the client —
@@ -79,32 +73,13 @@ export type ChangePinState = {
   success?: boolean;
 };
 
-const PIN_PATTERN = /^\d{6}$/;
-
 export async function changePin(
   _prevState: ChangePinState,
   formData: FormData
 ): Promise<ChangePinState> {
-  const currentPin = formData.get("currentPin");
-  const newPin = formData.get("newPin");
-  const confirmPin = formData.get("confirmPin");
-
-  if (
-    typeof currentPin !== "string" ||
-    typeof newPin !== "string" ||
-    typeof confirmPin !== "string" ||
-    !PIN_PATTERN.test(currentPin) ||
-    !PIN_PATTERN.test(newPin) ||
-    !PIN_PATTERN.test(confirmPin)
-  ) {
-    return { error: "Enter a 6-digit PIN at each step." };
-  }
-  if (newPin !== confirmPin) {
-    return { error: "New PINs didn't match. Try again." };
-  }
-  if (newPin === currentPin) {
-    return { error: "New PIN must be different from your current one." };
-  }
+  const parsed = parseForm(changePinSchema, formData);
+  if (!parsed.ok) return { error: parsed.error };
+  const { currentPin, newPin } = parsed.data;
 
   const supabase = await createClient();
   const {
@@ -127,7 +102,8 @@ export async function changePin(
 
   const { error: updateError } = await supabase.auth.updateUser({ password: newPin });
   if (updateError) {
-    return { error: updateError.message };
+    console.error("[auth] updateUser failed:", updateError);
+    return { error: "Couldn't change your PIN. Try again." };
   }
 
   return { success: true };

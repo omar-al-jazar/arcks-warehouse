@@ -1,29 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { getServiceRoleKey, getSupabaseEnv } from "@/lib/env";
 import { AUTH_COOKIE_NAME } from "./config";
 import type { Database } from "./types";
 
-// Server-side code runs inside the `app` container, so it must reach
-// Supabase via the internal Docker network address (SUPABASE_URL=http://kong:8000),
-// not the browser-facing NEXT_PUBLIC_SUPABASE_URL (http://localhost:8000).
-// Falls back to NEXT_PUBLIC_SUPABASE_URL for non-Docker local dev.
-const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!;
-
-// NEXT_PUBLIC_SUPABASE_ANON_KEY is inlined into the JS bundle at `next build`
-// time (it's a Next.js "public" env var), so the docker-compose runtime value
-// never reaches code that only reads NEXT_PUBLIC_SUPABASE_ANON_KEY — the
-// Dockerfile bakes in a placeholder there since the real key isn't known at
-// build time. SUPABASE_ANON_KEY is a plain env var, read live at runtime.
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
 // Create a new server client per request — it configures fetch calls using
-// that request's cookies.
+// that request's cookies. The URL and anon key come from getSupabaseEnv(),
+// which prefers the internal Docker host over the browser-facing one.
 export async function createClient() {
   const cookieStore = await cookies();
+  const { url, anonKey } = getSupabaseEnv();
 
   return createServerClient<Database>(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY,
+    url,
+    anonKey,
     {
       // Must match the browser client's cookieOptions.name in
       // lib/supabase/client.ts. Left to its default, supabase-js names the
@@ -58,8 +48,8 @@ export async function createClient() {
 // creating auth users from the owner's "add manager" flow later).
 export function createAdminClient() {
   return createServerClient<Database>(
-    SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    getSupabaseEnv().url,
+    getServiceRoleKey(),
     {
       cookies: {
         getAll() {

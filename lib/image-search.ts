@@ -1,10 +1,11 @@
 import "server-only";
+import { getExaApiKey } from "@/lib/env";
 
 // Looks up a stock/product photo for an identified piece of equipment, since
 // most gear gets photographed for identification while still in its bag/case
 // — that photo isn't a usable thumbnail, so this finds a proper one instead.
 export async function findStockImage(equipmentName: string): Promise<string | null> {
-  const apiKey = process.env.EXA_API_KEY;
+  const apiKey = getExaApiKey();
   if (!apiKey) return null;
 
   const response = await fetch("https://api.exa.ai/search", {

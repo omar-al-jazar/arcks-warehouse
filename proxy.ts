@@ -1,21 +1,17 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getSupabaseEnv } from "@/lib/env";
 import { AUTH_COOKIE_NAME } from "@/lib/supabase/config";
 
-// Runs inside the app container, so it reaches Supabase over the internal
-// Docker network (SUPABASE_URL=http://kong:8000). The NEXT_PUBLIC_ fallback
-// is for plain local dev; the NEXT_PUBLIC_ anon key is a build-time
-// placeholder in Docker, so the runtime-only SUPABASE_ANON_KEY comes first.
-const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
 export async function proxy(request: NextRequest) {
+  const { url, anonKey } = getSupabaseEnv();
+
   // Server Components can't write cookies, so this is the one place the
   // session is refreshed: any rotated token is written onto both the
   // forwarded request (so the page render sees it) and the response.
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  const supabase = createServerClient(url, anonKey, {
     cookieOptions: { name: AUTH_COOKIE_NAME },
     cookies: {
       getAll() {

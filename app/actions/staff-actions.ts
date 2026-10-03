@@ -2,8 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/server";
+import { dbErrorMessage } from "@/lib/supabase/errors";
 import { authorize } from "@/lib/auth/session";
-import { OWNER_ONLY, isStaffRole } from "@/lib/auth/roles";
+import { OWNER_ONLY } from "@/lib/auth/roles";
+import { parseForm } from "@/lib/validation";
+import { createStaffSchema } from "@/lib/schemas/staff";
 
 export type StaffFormState = {
   error?: string;
@@ -25,13 +28,9 @@ export async function createStaff(
     return { error: "Only the owner can add staff." };
   }
 
-  const name = String(formData.get("name") ?? "").trim();
-  const role = String(formData.get("role") ?? "");
-  const pin = String(formData.get("pin") ?? "");
-
-  if (!name) return { error: "Name is required." };
-  if (!isStaffRole(role)) return { error: "Pick a valid role." };
-  if (!/^\d{6}$/.test(pin)) return { error: "PIN must be exactly 6 digits." };
+  const parsed = parseForm(createStaffSchema, formData);
+  if (!parsed.ok) return { error: parsed.error };
+  const { name, role, pin } = parsed.data;
 
   const admin = createAdminClient();
 
@@ -53,7 +52,8 @@ export async function createStaff(
   });
 
   if (createError || !created.user) {
-    return { error: createError?.message ?? "Failed to create the account." };
+    console.error("[staff] createUser failed:", createError);
+    return { error: "Couldn't create the account. Try again." };
   }
 
   const { error: profileError } = await admin
@@ -63,7 +63,7 @@ export async function createStaff(
   if (profileError) {
     // Clean up the orphaned auth user rather than leaving an account with no profile.
     await admin.auth.admin.deleteUser(created.user.id);
-    return { error: profileError.message };
+    return { error: dbErrorMessage(profileError, "Couldn't create the account. Try again.") };
   }
 
   revalidatePath("/owner/staff");
