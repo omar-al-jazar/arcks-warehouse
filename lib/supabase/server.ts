@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { AUTH_COOKIE_NAME } from "./config";
 import type { Database } from "./types";
 
 // Server-side code runs inside the `app` container, so it must reach
@@ -24,6 +25,15 @@ export async function createClient() {
     SUPABASE_URL,
     SUPABASE_ANON_KEY,
     {
+      // Must match the browser client's cookieOptions.name in
+      // lib/supabase/client.ts. Left to its default, supabase-js names the
+      // session cookie after the Supabase URL's hostname
+      // (`sb-<first-label>-auth-token`) — this server client resolves
+      // SUPABASE_URL to the internal Docker hostname (http://kong:8000),
+      // while the browser client resolves the public URL, so the two sides
+      // computed different cookie names and the browser could never read
+      // the session the server had just written.
+      cookieOptions: { name: AUTH_COOKIE_NAME },
       cookies: {
         getAll() {
           return cookieStore.getAll();
