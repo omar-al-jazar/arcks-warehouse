@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import BarcodeScannerInput from "@/components/barcode-scanner-input";
 import { lookupBarcode } from "@/app/actions/equipment-actions";
 import { createCheckout } from "@/app/actions/checkout-actions";
+import { EQUIPMENT_CATEGORIES } from "@/lib/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldLabel, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -11,12 +12,6 @@ import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
 
 type CartItem = { id: number; name: string; barcode: string; category: string };
-
-const CATEGORY_ORDER = [
-  { category: "camera", label: "Camera" },
-  { category: "lighting", label: "Light" },
-  { category: "grip", label: "Grip" },
-];
 
 function defaultDueDate() {
   const date = new Date();
@@ -121,13 +116,13 @@ export default function CheckoutFlow() {
             <p className="text-sm text-muted-foreground">No items scanned yet.</p>
           ) : (
             <div className="flex flex-col gap-4">
-              {CATEGORY_ORDER.map(({ category, label }) => {
-                const items = cart.filter((i) => i.category === category);
+              {EQUIPMENT_CATEGORIES.map(({ value, shortLabel }) => {
+                const items = cart.filter((i) => i.category === value);
                 if (items.length === 0) return null;
                 return (
-                  <div key={category}>
+                  <div key={value}>
                     <p className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground">
-                      {label} ({items.length})
+                      {shortLabel} ({items.length})
                     </p>
                     <ul className="flex flex-col gap-2">
                       {items.map((item) => (

@@ -24,7 +24,20 @@ export default function ChangePinForm({ dashboardHref }: { dashboardHref: string
   const [pin, setPin] = useState("");
   const [storedCurrent, setStoredCurrent] = useState("");
   const [storedNew, setStoredNew] = useState("");
-  const [state, formAction, pending] = useActionState(changePin, initialState);
+  const [state, formAction, pending] = useActionState(async (prev: ChangePinState, formData: FormData) => {
+    const result = await changePin(prev, formData);
+    if (result.success) {
+      setStage("done");
+    } else if (result.error) {
+      // Wrong current PIN or a mismatched confirmation — start the whole
+      // 3-step flow over, same as an iOS "Passcodes didn't match".
+      setPin("");
+      setStoredCurrent("");
+      setStoredNew("");
+      setStage("current");
+    }
+    return result;
+  }, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   // Submitting the form (stage "confirm" reaching PIN_LENGTH) still needs an
@@ -35,21 +48,6 @@ export default function ChangePinForm({ dashboardHref }: { dashboardHref: string
       formRef.current?.requestSubmit();
     }
   }, [pin, stage, pending]);
-
-  useEffect(() => {
-    if (state.success) setStage("done");
-  }, [state.success]);
-
-  useEffect(() => {
-    if (state.error) {
-      // Wrong current PIN or a mismatched confirmation — start the whole
-      // 3-step flow over, same as an iOS "Passcodes didn't match".
-      setPin("");
-      setStoredCurrent("");
-      setStoredNew("");
-      setStage("current");
-    }
-  }, [state.error]);
 
   function handleChange(value: string) {
     setPin(value);

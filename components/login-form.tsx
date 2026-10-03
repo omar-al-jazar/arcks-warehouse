@@ -25,7 +25,11 @@ const ROLE_LABEL = { owner: "Owner", manager: "Warehouse Manager" } as const;
 export default function LoginForm({ next }: { next?: string }) {
   const [role, setRole] = useState<"owner" | "manager">("manager");
   const [pin, setPin] = useState("");
-  const [state, formAction, pending] = useActionState(login, initialState);
+  const [state, formAction, pending] = useActionState(async (prev: LoginState, formData: FormData) => {
+    const result = await login(prev, formData);
+    if (result.error) setPin("");
+    return result;
+  }, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const [biometricLabel, setBiometricLabel] = useState<string | null>(null);
   const [biometricPending, setBiometricPending] = useState(false);
@@ -76,10 +80,6 @@ export default function LoginForm({ next }: { next?: string }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
-
-  useEffect(() => {
-    if (state.error) setPin("");
-  }, [state.error]);
 
   async function signInWithBiometric() {
     setBiometricPending(true);

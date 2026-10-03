@@ -183,3 +183,5 @@ export type Database = {
     CompositeTypes: Record<string, never>;
   };
 };
+
+export type Equipment = Database["public"]["Tables"]["equipment"]["Row"];

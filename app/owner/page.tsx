@@ -2,13 +2,7 @@ import Link from "next/link";
 import { getEquipmentStats } from "@/lib/supabase/queries";
 import OverdueBanner from "@/components/overdue-banner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { EquipmentCategory } from "@/lib/supabase/types";
-
-const SECTIONS: { category: EquipmentCategory; label: string }[] = [
-  { category: "camera", label: "Camera" },
-  { category: "lighting", label: "Light" },
-  { category: "grip", label: "Grip" },
-];
+import { EQUIPMENT_CATEGORIES } from "@/lib/constants";
 
 export default async function OwnerDashboard() {
   const stats = await getEquipmentStats();
@@ -32,16 +26,16 @@ export default async function OwnerDashboard() {
           </Link>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          {SECTIONS.map(({ category, label }) => {
-            const counts = stats.byCategory[category] ?? {
+          {EQUIPMENT_CATEGORIES.map(({ value, shortLabel }) => {
+            const counts = stats.byCategory[value] ?? {
               total: 0,
               available: 0,
               checkedOut: 0,
               maintenance: 0,
             };
             return (
-              <div key={category} className="flex items-center gap-3">
-                <span className="w-16 shrink-0 text-sm font-medium">{label}</span>
+              <div key={value} className="flex items-center gap-3">
+                <span className="w-16 shrink-0 text-sm font-medium">{shortLabel}</span>
                 <div className="flex h-1.5 flex-1 overflow-hidden rounded-full bg-border">
                   {counts.total > 0 ? (
                     <>

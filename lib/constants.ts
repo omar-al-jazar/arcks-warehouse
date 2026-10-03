@@ -1,7 +1,16 @@
 import type { EquipmentCategory } from "@/lib/supabase/types";
 
-export const EQUIPMENT_CATEGORIES: { value: EquipmentCategory; label: string }[] = [
-  { value: "camera", label: "Camera" },
-  { value: "lighting", label: "Lighting" },
-  { value: "grip", label: "Grip" },
+type CategoryMeta = {
+  value: EquipmentCategory;
+  /** Full name, used in forms and detail views. */
+  label: string;
+  /** Compact name, used for section headings and stat rows. */
+  shortLabel: string;
+};
+
+/** Display order is the order of this array. */
+export const EQUIPMENT_CATEGORIES: readonly CategoryMeta[] = [
+  { value: "camera", label: "Camera", shortLabel: "Camera" },
+  { value: "lighting", label: "Lighting", shortLabel: "Light" },
+  { value: "grip", label: "Grip", shortLabel: "Grip" },
 ];

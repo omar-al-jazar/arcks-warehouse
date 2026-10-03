@@ -2,29 +2,13 @@ import Link from "next/link";
 import { getAllEquipment } from "@/lib/supabase/queries";
 import AddEquipmentForm from "@/components/add-equipment-form";
 import PhotoAddEquipment from "@/components/photo-add-equipment";
-import EquipmentRowActions from "@/components/equipment-row-actions";
-import EditEquipmentButton from "@/components/edit-equipment-button";
 import CollapsibleSection from "@/components/collapsible-section";
+import InventoryView from "@/components/inventory/inventory-view";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { NativeSelect } from "@/components/ui/native-select";
 import { PrinterIcon } from "lucide-react";
-import type { EquipmentCategory } from "@/lib/supabase/types";
-
-const STATUS_VARIANT: Record<string, "good" | "warn" | "secondary"> = {
-  available: "good",
-  checked_out: "warn",
-  maintenance: "secondary",
-};
-
-const SECTIONS: { category: EquipmentCategory; label: string }[] = [
-  { category: "camera", label: "Camera" },
-  { category: "lighting", label: "Light" },
-  { category: "grip", label: "Grip" },
-];
 
 export default async function InventoryPage({
   searchParams,
@@ -76,81 +60,7 @@ export default async function InventoryPage({
         </Link>
       </Card>
 
-      {SECTIONS.map((section) => (
-        <EquipmentSection
-          key={section.category}
-          label={section.label}
-          items={items.filter((item) => item.category === section.category)}
-        />
-      ))}
+      <InventoryView items={items} />
     </div>
-  );
-}
-
-function EquipmentSection({
-  label,
-  items,
-}: {
-  label: string;
-  items: Awaited<ReturnType<typeof getAllEquipment>>;
-}) {
-  return (
-    <Card className="overflow-hidden py-0">
-      <h2 className="border-b px-4 py-3 text-sm font-semibold text-muted-foreground">
-        {label} <span className="text-muted-foreground/60">({items.length})</span>
-      </h2>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead></TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Barcode</TableHead>
-            <TableHead>Serial #</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="py-6 text-center text-muted-foreground">
-                No {label.toLowerCase()} equipment matches these filters.
-              </TableCell>
-            </TableRow>
-          ) : (
-            items.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>
-                  {item.image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- external, unpredictable source
-                    <img src={item.image_url} alt="" className="size-8 rounded object-cover" />
-                  ) : (
-                    <div className="size-8 rounded bg-muted" />
-                  )}
-                </TableCell>
-                <TableCell className="font-medium">{item.name}</TableCell>
-                <TableCell className="font-mono text-muted-foreground">{item.barcode}</TableCell>
-                <TableCell className="text-muted-foreground">{item.serial_number ?? "—"}</TableCell>
-                <TableCell>
-                  <Badge variant={STATUS_VARIANT[item.status]}>{item.status.replace("_", " ")}</Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <EditEquipmentButton
-                      equipmentId={item.id}
-                      name={item.name}
-                      category={item.category}
-                      serialNumber={item.serial_number}
-                      imageUrl={item.image_url}
-                    />
-                    <EquipmentRowActions equipmentId={item.id} status={item.status} />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </Card>
   );
 }
