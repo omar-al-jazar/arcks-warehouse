@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile, getEquipmentByBarcode } from "@/lib/supabase/queries";
+import { getEquipmentByBarcode } from "@/lib/supabase/queries";
+import { authorize } from "@/lib/auth/session";
+import { OWNER_ONLY, STAFF } from "@/lib/auth/roles";
 import { identifyEquipmentPhoto, type EquipmentPhotoSuggestion } from "@/lib/vision";
 import { findStockImage } from "@/lib/image-search";
 import type { EquipmentCategory } from "@/lib/supabase/types";
@@ -18,10 +20,6 @@ const CATEGORIES = ["camera", "lighting", "grip"] as const;
 const MIN_QUANTITY = 1;
 const MAX_QUANTITY = 100;
 
-function isStaff(role: string | undefined) {
-  return role === "owner" || role === "manager";
-}
-
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -30,8 +28,7 @@ export async function addEquipment(
   _prevState: EquipmentFormState,
   formData: FormData
 ): Promise<EquipmentFormState> {
-  const profile = await getCurrentProfile();
-  if (!profile || !isStaff(profile.role)) {
+  if (!(await authorize(STAFF))) {
     return { error: "Only staff can add equipment." };
   }
 
@@ -150,8 +147,7 @@ export async function updateEquipment(
   _prevState: EquipmentFormState,
   formData: FormData
 ): Promise<EquipmentFormState> {
-  const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "owner") {
+  if (!(await authorize(OWNER_ONLY))) {
     return { error: "Only the owner can edit equipment." };
   }
 
@@ -191,8 +187,7 @@ export async function updateEquipment(
 }
 
 export async function setEquipmentStatus(equipmentId: number, status: "available" | "maintenance") {
-  const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "owner") {
+  if (!(await authorize(OWNER_ONLY))) {
     throw new Error("Only the owner can update equipment status.");
   }
 
@@ -220,8 +215,7 @@ export type PhotoIdentifyResult =
   | { error: string };
 
 export async function identifyPhoto(formData: FormData): Promise<PhotoIdentifyResult> {
-  const profile = await getCurrentProfile();
-  if (!profile || !isStaff(profile.role)) {
+  if (!(await authorize(STAFF))) {
     return { error: "Only staff can add equipment." };
   }
 
@@ -249,8 +243,7 @@ export async function identifyPhoto(formData: FormData): Promise<PhotoIdentifyRe
 }
 
 export async function searchStockImage(name: string): Promise<{ imageUrl: string | null }> {
-  const profile = await getCurrentProfile();
-  if (!profile || !isStaff(profile.role)) {
+  if (!(await authorize(STAFF))) {
     throw new Error("Only staff can add equipment.");
   }
   const imageUrl = await findStockImage(name).catch(() => null);
@@ -258,8 +251,7 @@ export async function searchStockImage(name: string): Promise<{ imageUrl: string
 }
 
 export async function previewNextBarcode(category: EquipmentCategory): Promise<{ barcode: string }> {
-  const profile = await getCurrentProfile();
-  if (!profile || !isStaff(profile.role)) {
+  if (!(await authorize(STAFF))) {
     throw new Error("Only staff can add equipment.");
   }
   const supabase = await createClient();

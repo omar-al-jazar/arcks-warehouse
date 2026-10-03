@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/server";
-import { getCurrentProfile } from "@/lib/supabase/queries";
-import type { StaffRole } from "@/lib/supabase/types";
+import { authorize } from "@/lib/auth/session";
+import { OWNER_ONLY, isStaffRole } from "@/lib/auth/roles";
 
 export type StaffFormState = {
   error?: string;
@@ -21,8 +21,7 @@ export async function createStaff(
   _prevState: StaffFormState,
   formData: FormData
 ): Promise<StaffFormState> {
-  const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "owner") {
+  if (!(await authorize(OWNER_ONLY))) {
     return { error: "Only the owner can add staff." };
   }
 
@@ -31,7 +30,7 @@ export async function createStaff(
   const pin = String(formData.get("pin") ?? "");
 
   if (!name) return { error: "Name is required." };
-  if (role !== "manager" && role !== "owner") return { error: "Pick a valid role." };
+  if (!isStaffRole(role)) return { error: "Pick a valid role." };
   if (!/^\d{6}$/.test(pin)) return { error: "PIN must be exactly 6 digits." };
 
   const admin = createAdminClient();
@@ -59,7 +58,7 @@ export async function createStaff(
 
   const { error: profileError } = await admin
     .from("profiles")
-    .insert({ id: created.user.id, name, role: role as StaffRole, email });
+    .insert({ id: created.user.id, name, role, email });
 
   if (profileError) {
     // Clean up the orphaned auth user rather than leaving an account with no profile.

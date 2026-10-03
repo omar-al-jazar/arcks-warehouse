@@ -1,10 +1,9 @@
-import { redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/supabase/queries";
+import { requireRole } from "@/lib/auth/session";
+import { OWNER_ONLY } from "@/lib/auth/roles";
 import NavBar from "@/components/nav-bar";
 
 export default async function OwnerLayout({ children }: LayoutProps<"/owner">) {
-  const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "owner") redirect("/login");
+  const profile = await requireRole(OWNER_ONLY);
 
   return (
     <div className="flex min-h-screen flex-col">

@@ -1,10 +1,9 @@
-import { redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/supabase/queries";
+import { requireRole } from "@/lib/auth/session";
+import { STAFF } from "@/lib/auth/roles";
 import NavBar from "@/components/nav-bar";
 
 export default async function ManagerLayout({ children }: LayoutProps<"/manager">) {
-  const profile = await getCurrentProfile();
-  if (!profile) redirect("/login");
+  const profile = await requireRole(STAFF);
 
   return (
     <div className="flex min-h-screen flex-col">

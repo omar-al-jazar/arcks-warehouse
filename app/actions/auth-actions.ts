@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { homeFor, isStaffRole } from "@/lib/auth/roles";
 
 export type LoginState = {
   error?: string;
@@ -19,7 +20,7 @@ export async function login(
   const next = formData.get("next");
 
   if (
-    (role !== "manager" && role !== "owner") ||
+    !isStaffRole(role) ||
     typeof pin !== "string" ||
     pin.length < 6
   ) {
@@ -50,12 +51,7 @@ export async function login(
     return { error: "That PIN wasn't recognized." };
   }
 
-  const destination =
-    typeof next === "string" && next.startsWith("/")
-      ? next
-      : role === "owner"
-        ? "/owner"
-        : "/manager";
+  const destination = typeof next === "string" && next.startsWith("/") ? next : homeFor(role);
 
   // Checked server-side via Supabase (a SECURITY DEFINER RPC scoped to
   // auth.uid(), see migration 0005) rather than trusted from the client —

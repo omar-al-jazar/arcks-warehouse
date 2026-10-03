@@ -1,15 +1,14 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getCurrentProfile } from "@/lib/supabase/queries";
+import { getCurrentProfile } from "@/lib/auth/session";
+import { homeFor } from "@/lib/auth/roles";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CameraIcon, LightbulbIcon, WrenchIcon, ArrowRightIcon } from "lucide-react";
 
 export default async function Home() {
   const profile = await getCurrentProfile();
-  if (profile) {
-    redirect(profile.role === "owner" ? "/owner" : "/manager");
-  }
+  if (profile) redirect(homeFor(profile.role));
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-4 py-16">
