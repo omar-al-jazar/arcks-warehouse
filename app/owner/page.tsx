@@ -27,12 +27,7 @@ export default async function OwnerDashboard() {
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {EQUIPMENT_CATEGORIES.map(({ value, shortLabel }) => {
-            const counts = stats.byCategory[value] ?? {
-              total: 0,
-              available: 0,
-              checkedOut: 0,
-              maintenance: 0,
-            };
+            const counts = stats.byCategory[value];
             return (
               <div key={value} className="flex items-center gap-3">
                 <span className="w-16 shrink-0 text-sm font-medium">{shortLabel}</span>

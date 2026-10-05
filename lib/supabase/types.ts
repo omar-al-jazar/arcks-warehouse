@@ -173,6 +173,10 @@ export type Database = {
         Args: { p_category: EquipmentCategory };
         Returns: string;
       };
+      equipment_status_counts: {
+        Args: Record<string, never>;
+        Returns: { category: EquipmentCategory; status: EquipmentStatus; count: number }[];
+      };
     };
     Enums: {
       staff_role: StaffRole;

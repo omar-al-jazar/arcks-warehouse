@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { summarizeStatusCounts, type EquipmentStats } from "@/lib/equipment-stats";
 import type { EquipmentCategory, EquipmentStatus } from "@/lib/supabase/types";
 
 export async function getAllStaff() {
@@ -62,33 +63,11 @@ export async function getEquipmentByBarcode(barcode: string) {
   return data;
 }
 
-export async function getEquipmentStats() {
+export async function getEquipmentStats(): Promise<EquipmentStats> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("equipment").select("category, status");
+  const { data, error } = await supabase.rpc("equipment_status_counts");
   if (error) throw error;
-
-  const byCategory: Record<
-    string,
-    { total: number; available: number; checkedOut: number; maintenance: number }
-  > = {};
-
-  for (const item of data) {
-    if (!byCategory[item.category]) {
-      byCategory[item.category] = { total: 0, available: 0, checkedOut: 0, maintenance: 0 };
-    }
-    byCategory[item.category].total += 1;
-    if (item.status === "available") byCategory[item.category].available += 1;
-    if (item.status === "checked_out") byCategory[item.category].checkedOut += 1;
-    if (item.status === "maintenance") byCategory[item.category].maintenance += 1;
-  }
-
-  return {
-    total: data.length,
-    available: data.filter((e) => e.status === "available").length,
-    checkedOut: data.filter((e) => e.status === "checked_out").length,
-    maintenance: data.filter((e) => e.status === "maintenance").length,
-    byCategory,
-  };
+  return summarizeStatusCounts(data);
 }
 
 export async function getActiveOrdersWithItems() {
