@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Self-hosted Supabase runtime data (live Postgres files, uploads) - never commit
+volumes/db/data/
+volumes/storage/*
+!volumes/storage/.gitkeep

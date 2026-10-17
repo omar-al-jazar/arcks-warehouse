@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Arck's Warehouse (shadcn/ui rebuild)
 
-## Getting Started
+A [shadcn/ui](https://ui.shadcn.com) + [Base UI](https://base-ui.com) rebuild of [Arck's Warehouse](../SaaS-1/README.md)'s frontend — same warehouse-tracking app for film/production equipment, same Postgres schema, rebuilt UI on Next.js 16. Runs on its own independent self-hosted Supabase stack (own Postgres, Auth, Kong, Storage), separate from the original app's stack.
 
-First, run the development server:
+## Running it locally
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+This project brings up its own full Supabase stack via Docker Compose, on ports chosen not to collide with a `warehouse-tracker` stack running on the same machine:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Copy the env template and generate real secrets:
+   ```bash
+   cp .env.example .env
+   sh utils/generate-keys.sh --update-env
+   ```
+2. Edit `.env` and set `WEBAUTHN_RP_ID`/`WEBAUTHN_RP_ORIGINS` for your environment (see the comment block above those variables in `.env.example`).
+3. Bring up the database first and apply the schema:
+   ```bash
+   docker compose up -d db
+   # wait for `docker compose ps db` to show healthy, then:
+   docker compose up -d   # starts auth/kong/rest/etc., which the later migrations depend on
+   for f in supabase/migrations/*.sql; do
+     docker compose exec -T db psql -U postgres -d postgres < "$f"
+   done
+   ```
+4. Bring up the app:
+   ```bash
+   docker compose up -d app
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Open [http://localhost:3001](http://localhost:3001) with your browser to see the result — **not** `:3000`, which is `warehouse-tracker`'s port.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Ports
 
-## Learn More
+| Service | Port |
+|---|---|
+| App | `3001` |
+| Kong (API gateway) | `8100` / `8543` (HTTPS) |
+| Postgres | `5433` |
+| Supavisor (pooler) | `6544` |
 
-To learn more about Next.js, take a look at the following resources:
+## Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Same self-hosted Supabase stack as `warehouse-tracker` (`docker-compose.yml` is the official Supabase self-hosting recipe plus an `app` service) — see that project's README for the underlying architecture (auth, RLS, checkout/return functions, barcode scanning). What differs here is the UI layer: shadcn/ui components (`components/ui/`) and Base UI primitives instead of hand-rolled "glass" styling, plus a more granular route structure (`app/manager/*`, `app/owner/*`) instead of single flat pages per role.
