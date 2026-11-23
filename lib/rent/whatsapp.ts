@@ -19,8 +19,8 @@ export function isSaudiMobileDigits(digits: string): boolean {
 }
 
 /**
- * A wa.me link for a customer's number. Saudi mobiles are usually typed as
- * 05xxxxxxxx; wa.me needs the country code and no leading zero or plus.
+ * A wa.me link for a phone (customer or business). Accepts 05xxxxxxxx or
+ * already-normalized 9665… digits from rental_settings.business_whatsapp.
  */
 export function whatsappLink(phone: string, text?: string) {
   const digits = normalizeWhatsappDigits(phone) ?? phone.replace(/\D/g, "");

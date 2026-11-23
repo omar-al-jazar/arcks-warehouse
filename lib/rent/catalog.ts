@@ -51,6 +51,21 @@ export async function getPublicDeliveryFee(): Promise<number | null> {
   return toSar(data?.delivery_fee_sar);
 }
 
+/**
+ * Business WhatsApp digits (9665…), or null until the owner sets one.
+ * Public reserve builds wa.me from this only — never from the customer phone.
+ */
+export async function getPublicBusinessWhatsapp(): Promise<string | null> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("rental_settings")
+    .select("business_whatsapp")
+    .eq("id", true)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.business_whatsapp ?? null;
+}
+
 export async function availabilityFor(gear: PublicGear, now = new Date()) {
   const today = riyadhToday(now);
   const blocks = await blocksFor(gear, now);

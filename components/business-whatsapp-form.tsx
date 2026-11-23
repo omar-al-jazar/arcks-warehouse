@@ -28,7 +28,8 @@ export default function BusinessWhatsappForm({ businessWhatsapp }: { businessWha
             defaultValue={businessWhatsapp ?? ""}
           />
           <FieldDescription>
-            Saved as wa.me digits (9665…). Leave blank to clear. The public reserve button will use this later.
+            Saved as wa.me digits (9665…). Leave blank to clear. After a public reserve, the confirmation
+            button opens a chat to this number.
           </FieldDescription>
         </Field>
         <Button type="submit" disabled={pending}>
