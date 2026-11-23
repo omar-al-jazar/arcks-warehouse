@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/server";
 import { parseForm } from "@/lib/validation";
 import { reserveSchema } from "@/lib/schemas/rent";
-import { availabilityFor, getPublicDeliveryFee, getPublicGear } from "@/lib/rent/catalog";
+import {
+  availabilityFor,
+  getPublicBusinessWhatsapp,
+  getPublicDeliveryFee,
+  getPublicGear,
+} from "@/lib/rent/catalog";
 import { addDays, HOLD_HOURS, quote, rentalDays, riyadhToday } from "@/lib/rent/dates";
 import { confirmationText, whatsappLink } from "@/lib/rent/whatsapp";
 
@@ -28,7 +33,11 @@ export async function reserveGear(_prev: ReserveState, formData: FormData): Prom
   const days = rentalDays(parsed.data.start, parsed.data.end);
   if (days < 1) return { error: "Return must be after pickup." };
 
-  const [{ days: strip }, deliveryFeeSar] = await Promise.all([availabilityFor(gear), getPublicDeliveryFee()]);
+  const [{ days: strip }, deliveryFeeSar, businessWhatsapp] = await Promise.all([
+    availabilityFor(gear),
+    getPublicDeliveryFee(),
+    getPublicBusinessWhatsapp(),
+  ]);
   const wanted = Array.from({ length: days }, (_, index) => addDays(parsed.data.start, index));
   const outside = wanted.some((day) => !strip.some((entry) => entry.date === day));
   const blocked = wanted.some((day) => strip.find((entry) => entry.date === day)?.booked);
@@ -71,17 +80,16 @@ export async function reserveGear(_prev: ReserveState, formData: FormData): Prom
   revalidatePath(`/rent/${gear.barcode}`);
   revalidatePath("/owner/bookings");
   // Email is not wired. Nothing here sends mail or pretends a message was delivered.
+  // Destination is rental_settings.business_whatsapp only — never the customer phone.
+  const text = confirmationText({
+    customerName: parsed.data.name,
+    gearName: gear.name,
+    barcode: gear.barcode,
+    start: parsed.data.start,
+    end: parsed.data.end,
+  });
   return {
     heldUntil: heldUntil.toISOString(),
-    whatsappUrl: whatsappLink(
-      parsed.data.phone,
-      confirmationText({
-        customerName: parsed.data.name,
-        gearName: gear.name,
-        barcode: gear.barcode,
-        start: parsed.data.start,
-        end: parsed.data.end,
-      }),
-    ),
+    whatsappUrl: businessWhatsapp ? whatsappLink(businessWhatsapp, text) : undefined,
   };
 }

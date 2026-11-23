@@ -78,7 +78,7 @@ export default function KitBooking({
                 Open the WhatsApp confirmation
               </a>
               <p className="text-center text-xs text-muted-foreground">
-                Opens a WhatsApp chat with the number you entered, with this hold ready to send.
+                Opens a WhatsApp chat with the rental house, with this hold ready to send.
               </p>
             </>
           ) : null}
