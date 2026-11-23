@@ -14,6 +14,7 @@ export default async function OwnerLayout({ children }: LayoutProps<"/owner">) {
           { href: "/owner", label: "Dashboard" },
           { href: "/owner/inventory", label: "Inventory" },
           { href: "/owner/orders", label: "Orders" },
+          { href: "/owner/bookings", label: "Bookings" },
           { href: "/owner/staff", label: "Staff" },
           { href: "/owner/settings", label: "Settings" },
         ]}

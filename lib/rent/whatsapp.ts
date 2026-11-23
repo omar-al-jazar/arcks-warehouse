@@ -11,3 +11,14 @@ export function whatsappLink(phone: string, text?: string) {
   const query = text ? `?text=${encodeURIComponent(text)}` : "";
   return `https://wa.me/${digits}${query}`;
 }
+
+/** Prefilled text for the hold confirmation chat between the house and the customer. */
+export function confirmationText(details: {
+  customerName: string;
+  gearName: string;
+  barcode: string;
+  start: string;
+  end: string;
+}) {
+  return `Hello ${details.customerName}, please confirm your hold on ${details.gearName} (${details.barcode}), pickup ${details.start}, return ${details.end}.`;
+}

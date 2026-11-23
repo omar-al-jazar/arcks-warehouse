@@ -1,5 +1,5 @@
-// Hand-written to match supabase/migrations/0001-0004. If the schema
-// changes, regenerate with the Supabase CLI instead of editing by hand:
+// Hand-written to match supabase/migrations. If the schema changes,
+// regenerate with the Supabase CLI instead of editing by hand:
 //   npx supabase gen types typescript --local > lib/supabase/types.ts
 
 export type StaffRole = "manager" | "owner";
@@ -199,6 +199,12 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      rental_settings: {
+        Row: { id: boolean; delivery_fee_sar: number | null };
+        Insert: { id?: boolean; delivery_fee_sar?: number | null };
+        Update: Partial<{ id: boolean; delivery_fee_sar: number | null }>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
