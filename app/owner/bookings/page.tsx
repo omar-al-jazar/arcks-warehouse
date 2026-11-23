@@ -2,6 +2,7 @@ import BookingRowActions from "@/components/booking-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { formatSar } from "@/lib/rent/dates";
 import { confirmationText, whatsappLink } from "@/lib/rent/whatsapp";
 import { getBookings } from "@/lib/supabase/queries";
 import type { BookingStatus } from "@/lib/supabase/types";
@@ -45,8 +46,8 @@ export default async function OwnerBookingsPage() {
               <TableHead>Gear</TableHead>
               <TableHead>Barcode</TableHead>
               <TableHead>Dates</TableHead>
+              <TableHead>Quote</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead>Phone</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Expired</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -83,8 +84,29 @@ export default async function OwnerBookingsPage() {
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatDay(booking.start_date)} – {formatDay(booking.end_date)}
                     </TableCell>
-                    <TableCell>{booking.customer_name}</TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">{booking.customer_phone}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {booking.total_sar == null && booking.delivery_fee_sar == null ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : (
+                        <div className="flex flex-col">
+                          {booking.total_sar != null ? (
+                            <span className="font-medium">{formatSar(booking.total_sar, "")}</span>
+                          ) : null}
+                          {booking.delivery_fee_sar != null ? (
+                            <span className="text-xs text-muted-foreground">
+                              {booking.fulfilment === "collect" ? "Collect" : "Delivery"}{" "}
+                              {formatSar(booking.delivery_fee_sar, "")}
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span>{booking.customer_name}</span>
+                        <span className="text-xs text-muted-foreground">{booking.customer_phone}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge variant={statusVariant(booking.status)}>{STATUS_LABEL[booking.status]}</Badge>
                     </TableCell>
