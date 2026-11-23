@@ -27,10 +27,19 @@ const STATUS_LABEL: Record<BookingStatus, string> = {
   cancelled: "Cancelled",
 };
 
-function statusVariant(status: BookingStatus): "warn" | "good" | "outline" {
+function statusVariant(
+  status: BookingStatus,
+  expired: boolean
+): "warn" | "good" | "outline" | "destructive" {
+  if (expired) return "destructive";
   if (status === "held" || status === "out") return "warn";
   if (status === "confirmed" || status === "returned") return "good";
   return "outline";
+}
+
+function statusLabel(status: BookingStatus, expired: boolean) {
+  if (expired) return "Expired";
+  return STATUS_LABEL[status];
 }
 
 export default async function OwnerBookingsPage() {
@@ -49,14 +58,13 @@ export default async function OwnerBookingsPage() {
               <TableHead>Quote</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Expired</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {bookings.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="py-6 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="py-6 text-center text-muted-foreground">
                   No holds yet.
                 </TableCell>
               </TableRow>
@@ -65,7 +73,8 @@ export default async function OwnerBookingsPage() {
                 const gear = Array.isArray(booking.equipment) ? booking.equipment[0] : booking.equipment;
                 const gearName = gear?.name ?? "Reserved piece";
                 const barcode = gear?.barcode ?? "—";
-                const canChange = booking.status === "held" || booking.status === "confirmed";
+                const liveHold = booking.status === "held" && !booking.expired;
+                const canChange = liveHold || booking.status === "confirmed" || booking.expired;
                 const href = whatsappLink(
                   booking.customer_phone,
                   confirmationText({
@@ -108,14 +117,9 @@ export default async function OwnerBookingsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={statusVariant(booking.status)}>{STATUS_LABEL[booking.status]}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {booking.expired ? (
-                        <Badge variant="destructive">Expired</Badge>
-                      ) : (
-                        <span className="text-muted-foreground">No</span>
-                      )}
+                      <Badge variant={statusVariant(booking.status, booking.expired)}>
+                        {statusLabel(booking.status, booking.expired)}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col items-end gap-2">
@@ -129,7 +133,7 @@ export default async function OwnerBookingsPage() {
                           WhatsApp
                         </a>
                         {canChange ? (
-                          <BookingRowActions bookingId={booking.id} canConfirm={booking.status === "held"} />
+                          <BookingRowActions bookingId={booking.id} canConfirm={liveHold} />
                         ) : null}
                       </div>
                     </TableCell>
