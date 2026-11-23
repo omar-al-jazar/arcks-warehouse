@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import KitBooking from "@/components/rent/kit-booking";
-import { availabilityFor, getPublicGear } from "@/lib/rent/catalog";
+import { availabilityFor, getPublicDeliveryFee, getPublicGear } from "@/lib/rent/catalog";
 import type { EquipmentCategory } from "@/lib/supabase/types";
 
 const LABEL: Record<EquipmentCategory, string> = {
@@ -21,7 +21,7 @@ export default async function KitPage({ params }: PageProps<"/rent/[barcode]">) 
   const gear = await getPublicGear(barcode);
   if (!gear) notFound();
 
-  const availability = await availabilityFor(gear);
+  const [availability, deliveryFeeSar] = await Promise.all([availabilityFor(gear), getPublicDeliveryFee()]);
   const freeOnStrip = availability.free;
 
   return (
@@ -92,7 +92,12 @@ export default async function KitPage({ params }: PageProps<"/rent/[barcode]">) 
           </section>
         </div>
 
-        <KitBooking barcode={gear.barcode} dayRateSar={gear.dayRateSar} days={availability.days} />
+        <KitBooking
+          barcode={gear.barcode}
+          dayRateSar={gear.dayRateSar}
+          deliveryFeeSar={deliveryFeeSar}
+          days={availability.days}
+        />
       </div>
     </main>
   );

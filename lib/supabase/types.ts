@@ -165,6 +165,10 @@ export type Database = {
           customer_name: string;
           customer_phone: string;
           created_at: string;
+          day_rate_sar: number | null;
+          delivery_fee_sar: number | null;
+          vat_sar: number | null;
+          total_sar: number | null;
         };
         Insert: {
           id?: number;
@@ -177,6 +181,10 @@ export type Database = {
           customer_name: string;
           customer_phone: string;
           created_at?: string;
+          day_rate_sar?: number | null;
+          delivery_fee_sar?: number | null;
+          vat_sar?: number | null;
+          total_sar?: number | null;
         };
         Update: Partial<{
           id: number;
@@ -189,6 +197,10 @@ export type Database = {
           customer_name: string;
           customer_phone: string;
           created_at: string;
+          day_rate_sar: number | null;
+          delivery_fee_sar: number | null;
+          vat_sar: number | null;
+          total_sar: number | null;
         }>;
         Relationships: [
           {

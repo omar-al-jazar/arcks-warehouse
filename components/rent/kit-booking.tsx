@@ -26,10 +26,12 @@ const initialState: ReserveState = {};
 export default function KitBooking({
   barcode,
   dayRateSar,
+  deliveryFeeSar,
   days,
 }: {
   barcode: string;
   dayRateSar: number | null;
+  deliveryFeeSar: number | null;
   days: Day[];
 }) {
   const stay = defaultStay(days);
@@ -38,7 +40,10 @@ export default function KitBooking({
   const [fulfilment, setFulfilment] = useState<Fulfilment>("delivery");
   const [state, action, pending] = useActionState(reserveGear, initialState);
 
-  const priced = useMemo(() => quote(rentalDays(start, end), dayRateSar, fulfilment, null), [start, end, dayRateSar, fulfilment]);
+  const priced = useMemo(
+    () => quote(start && end ? rentalDays(start, end) : 0, dayRateSar, fulfilment, deliveryFeeSar),
+    [start, end, dayRateSar, fulfilment, deliveryFeeSar],
+  );
   const taken = days.some((day) => day.booked && day.date >= start && day.date < end);
   const heldLabel = state.heldUntil
     ? new Intl.DateTimeFormat("en-GB", {

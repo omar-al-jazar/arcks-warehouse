@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/server";
 import { parseForm } from "@/lib/validation";
 import { reserveSchema } from "@/lib/schemas/rent";
-import { availabilityFor, getPublicGear } from "@/lib/rent/catalog";
-import { addDays, HOLD_HOURS, rentalDays, riyadhToday } from "@/lib/rent/dates";
+import { availabilityFor, getPublicDeliveryFee, getPublicGear } from "@/lib/rent/catalog";
+import { addDays, HOLD_HOURS, quote, rentalDays, riyadhToday } from "@/lib/rent/dates";
 import { confirmationText, whatsappLink } from "@/lib/rent/whatsapp";
 
 export type ReserveState = {
@@ -28,11 +28,14 @@ export async function reserveGear(_prev: ReserveState, formData: FormData): Prom
   const days = rentalDays(parsed.data.start, parsed.data.end);
   if (days < 1) return { error: "Return must be after pickup." };
 
-  const { days: strip } = await availabilityFor(gear);
+  const [{ days: strip }, deliveryFeeSar] = await Promise.all([availabilityFor(gear), getPublicDeliveryFee()]);
   const wanted = Array.from({ length: days }, (_, index) => addDays(parsed.data.start, index));
   const outside = wanted.some((day) => !strip.some((entry) => entry.date === day));
   const blocked = wanted.some((day) => strip.find((entry) => entry.date === day)?.booked);
   if (outside || blocked) return { error: "Those dates are already taken." };
+
+  // Price from the stored day rate and fee only. Never accept an amount from the form.
+  const priced = quote(days, gear.dayRateSar, parsed.data.fulfilment, deliveryFeeSar);
 
   const admin = createAdminClient();
   const now = new Date();
@@ -53,6 +56,10 @@ export async function reserveGear(_prev: ReserveState, formData: FormData): Prom
     held_until: heldUntil.toISOString(),
     customer_name: parsed.data.name,
     customer_phone: parsed.data.phone,
+    day_rate_sar: gear.dayRateSar,
+    delivery_fee_sar: priced.fee,
+    vat_sar: priced.vat,
+    total_sar: priced.total,
   });
 
   if (error) {
