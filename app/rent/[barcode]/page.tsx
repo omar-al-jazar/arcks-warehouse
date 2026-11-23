@@ -83,11 +83,16 @@ export default async function KitPage({ params }: PageProps<"/rent/[barcode]">) 
 
           <section className="flex flex-col gap-3">
             <h2 className="font-heading text-lg">What arrives</h2>
-            <ul className="overflow-hidden rounded-xl border border-border">
-              <li className="flex items-center justify-between gap-3 bg-card px-4 py-3">
-                <span>{gear.name}</span>
-                <span className="text-sm font-semibold text-muted-foreground">× 1</span>
-              </li>
+            <ul className="overflow-hidden rounded-xl border border-border divide-y divide-border">
+              {(gear.kitContents.length > 0
+                ? gear.kitContents
+                : [{ label: gear.name, qty: 1 }]
+              ).map((item, index) => (
+                <li key={`${item.label}-${index}`} className="flex items-center justify-between gap-3 bg-card px-4 py-3">
+                  <span>{item.label}</span>
+                  <span className="text-sm font-semibold text-muted-foreground">× {item.qty}</span>
+                </li>
+              ))}
             </ul>
           </section>
         </div>
