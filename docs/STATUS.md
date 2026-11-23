@@ -30,7 +30,7 @@ None waiting on review once this PR merges. Live DB still needs migrations **000
 
 ## Waiting on the user
 
-- Open the **barakat** Claude Code session and paste the one message in `docs/BARAKAT-CLAUDE-TASK.md` (applies `0008`–`0012` via `scripts/barakat-apply-migrations.sh`). Cursor Cloud is outside Tailscale.
+- Barakat Claude: option **1** approved — backup, then apply `0007`–`0012` with stop-on-error (`docs/BARAKAT-CLAUDE-TASK.md`). Paste Before/After back to Cursor.
 - Send the business name and the first bookable kit when ready.
 - Set delivery fee / business WhatsApp later if you want those paths live.
 
@@ -45,3 +45,5 @@ None waiting on review once this PR merges. Live DB still needs migrations **000
 - 23 Nov: public kit page and 24-hour holds. PR #1 merged.
 - 24 Nov: PRs #2–#13 merged. Tracker shots refreshed with Mini LF @ SAR 3,800 preview. Migration 0012 adds competitive day rates for unset rows (this branch).
 - 24 Nov (later): Added `scripts/barakat-apply-migrations.sh` + `docs/BARAKAT-CLAUDE-TASK.md` for Claude Remote Control on Barakat to apply 0008–0012.
+
+- 24 Nov: Barakat apply upgraded to option 1 — backup then 0007–0012 stop-on-error (Omar via Cursor).

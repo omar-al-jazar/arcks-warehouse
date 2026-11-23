@@ -1,11 +1,23 @@
 # Task for Claude on Barakat (Remote Control)
 
-Cursor Cloud cannot reach Tailscale. Claude Code already runs on this machine via Remote Control — run the job below end-to-end without asking Omar for confirmation of each step. Do not change delivery fee or business WhatsApp.
+Cursor Cloud cannot reach Tailscale. Claude Code on this server runs the job below.
 
-## Do this
+## Decision (Omar via Cursor, 24 Nov 2026 Riyadh)
+
+**Option 1 — approved.**
+
+- Fresh `pg_dump` backup first.
+- Apply migrations **0007 → 0012** in order.
+- Each file is its own transaction; **stop on the first error** (no continuing after failures).
+- Report Before and After counts.
+- Do **not** set `delivery_fee_sar` or `business_whatsapp`.
+- Do **not** deploy new app code (Sep 16 image stays until a separate deploy).
+
+Options 2 (backup only) and 3 (wait) were rejected.
+
+## Run
 
 ```bash
-# Prefer the shadcn ARC app tree; fall back if the name differs
 cd ~/arcks-warehouse-shadcn 2>/dev/null || cd ~/arcks-warehouse 2>/dev/null || cd ~/warehouse-tracker
 
 git fetch origin main
@@ -16,17 +28,16 @@ chmod +x scripts/barakat-apply-migrations.sh
 bash scripts/barakat-apply-migrations.sh
 ```
 
-## Then
-
-1. Paste the script’s **After** section back into the Cursor chat (or commit nothing — Cursor only needs the counts).
-2. If `db` is not running, start the compose stack that owns the live rental DB, wait until healthy, and re-run the script once.
-3. Do not invent rates. Migration `0012` already encodes the competitive schedule.
-4. Do not set `delivery_fee_sar` or `business_whatsapp`.
+If `db` is down, start that compose stack, wait until healthy, then run the script once. Do not invent rates; `0012` already encodes them.
 
 ## Paste into the Barakat Code session
 
-Copy everything in the block below as one message to the **barakat** Claude Code session (phone or claude.ai/code):
-
 ```
-Read docs/BARAKAT-CLAUDE-TASK.md in this repo (or after git pull on main). Then run scripts/barakat-apply-migrations.sh on this server and report the After section. Do not set delivery fee or WhatsApp. Do not ask for confirmation between steps — Omar already approved this job from Cursor.
+Omar via Cursor chose option 1.
+
+Apply migrations 0007 through 0012 in order on the live Barakat Postgres for ARC. Fresh pg_dump backup first. Each migration file as its own transaction; stop on the first error. Do not set delivery fee or business WhatsApp. Do not deploy app code.
+
+git pull origin main, then run: bash scripts/barakat-apply-migrations.sh
+
+Paste the Before and After sections back here (or into the Cursor chat). Read docs/BARAKAT-CLAUDE-TASK.md if you need the full brief.
 ```
