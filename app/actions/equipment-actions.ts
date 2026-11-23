@@ -144,12 +144,19 @@ export async function updateEquipment(
 
   const parsed = parseForm(updateEquipmentSchema, formData);
   if (!parsed.ok) return { error: parsed.error };
-  const { equipmentId, name, category, serialNumber, imageUrl, dayRate } = parsed.data;
+  const { equipmentId, name, category, serialNumber, imageUrl, dayRate, kitContents } = parsed.data;
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("equipment")
-    .update({ name, category, serial_number: serialNumber, image_url: imageUrl, day_rate_sar: dayRate })
+    .update({
+      name,
+      category,
+      serial_number: serialNumber,
+      image_url: imageUrl,
+      day_rate_sar: dayRate,
+      kit_contents: kitContents,
+    })
     .eq("id", equipmentId);
 
   if (error) {

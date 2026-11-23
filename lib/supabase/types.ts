@@ -9,6 +9,9 @@ export type OrderStatus = "active" | "completed";
 export type BookingStatus = "held" | "confirmed" | "out" | "returned" | "cancelled";
 export type BookingFulfilment = "delivery" | "collect";
 
+/** One line in an equipment kit's "What arrives" list. */
+export type KitContentItem = { label: string; qty: number };
+
 export type Database = {
   public: {
     Tables: {
@@ -31,6 +34,7 @@ export type Database = {
           image_url: string | null;
           day_rate_sar: number | null;
           public_description: string | null;
+          kit_contents: KitContentItem[];
           created_at: string;
         };
         Insert: {
@@ -45,6 +49,7 @@ export type Database = {
           image_url?: string | null;
           day_rate_sar?: number | null;
           public_description?: string | null;
+          kit_contents?: KitContentItem[];
           created_at?: string;
         };
         Update: Partial<{
@@ -59,6 +64,7 @@ export type Database = {
           image_url: string | null;
           day_rate_sar: number | null;
           public_description: string | null;
+          kit_contents: KitContentItem[];
           created_at: string;
         }>;
         Relationships: [];
