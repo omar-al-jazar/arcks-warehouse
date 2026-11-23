@@ -2,7 +2,7 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 24 Nov 2026, 2:44 AM Riyadh time, by Cursor.
+Last updated 24 Nov 2026, 2:52 AM Riyadh time, by Cursor.
 
 ## Now: Phase 1, one bookable kit
 
@@ -20,7 +20,7 @@ A customer finds a kit, picks dates, sees the full price, and reserves it with a
 
 ## Open work
 
-None waiting on review. Live schema **0007–0012** applied on Barakat (24 Nov). App redeploy from `main` handed to Barakat Claude (`scripts/barakat-redeploy-app.sh`).
+None waiting on review. Live schema **0007–0012** applied. Redeploy script on `main` via [#18](https://github.com/omar-al-jazar/arcks-warehouse/pull/18). Waiting on Barakat Claude to run it.
 
 ## Next up, in order
 
@@ -30,7 +30,7 @@ None waiting on review. Live schema **0007–0012** applied on Barakat (24 Nov).
 
 ## Waiting on the user
 
-- Paste the redeploy message in `docs/BARAKAT-CLAUDE-TASK.md` into the **barakat** Claude Code session (or approve if already sent).
+- Paste the block below into the **barakat** Claude Code session (also in `docs/BARAKAT-CLAUDE-TASK.md`).
 - Send the business name and the first bookable kit when ready.
 - Set delivery fee / business WhatsApp later if you want those paths live.
 
@@ -48,3 +48,4 @@ None waiting on review. Live schema **0007–0012** applied on Barakat (24 Nov).
 - 24 Nov, 2:44 AM Riyadh: Barakat applied **0007–0012**. Before: 140 equipment, no bookings/rental_settings. After: bookings + rental_settings live; 140/140 rates set (40–3800, avg 364); camera 26 / lighting 78 / grip 36; delivery fee and WhatsApp left empty; app HTTP 200.
 
 - 24 Nov, ~2:48 AM Riyadh: Omar approved app redeploy from main; script + Barakat Claude task updated.
+- 24 Nov, 2:52 AM Riyadh: Merged #18 (redeploy script). Paste for Barakat Claude ready.
