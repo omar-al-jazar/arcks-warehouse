@@ -6,7 +6,7 @@ import { dbErrorMessage } from "@/lib/supabase/errors";
 import { authorize } from "@/lib/auth/session";
 import { OWNER_ONLY } from "@/lib/auth/roles";
 import { parseForm, parseInput } from "@/lib/validation";
-import { bookingDecisionSchema, deliveryFeeSchema } from "@/lib/schemas/bookings";
+import { bookingDecisionSchema, businessWhatsappSchema, deliveryFeeSchema } from "@/lib/schemas/bookings";
 import type { BookingStatus } from "@/lib/supabase/types";
 
 export type BookingActionState = {
@@ -64,6 +64,31 @@ export async function setDeliveryFee(_prev: BookingActionState, formData: FormDa
 
   if (error) return { error: dbErrorMessage(error, "Couldn't save the delivery fee. Try again.") };
   if (data.length === 0) return { error: "Couldn't save the delivery fee. Try again." };
+
+  revalidatePath("/owner/settings");
+  return { success: true };
+}
+
+export async function setBusinessWhatsapp(
+  _prev: BookingActionState,
+  formData: FormData
+): Promise<BookingActionState> {
+  if (!(await authorize(OWNER_ONLY))) {
+    return { error: "Only the owner can set the business WhatsApp number." };
+  }
+
+  const parsed = parseForm(businessWhatsappSchema, formData);
+  if (!parsed.ok) return { error: parsed.error };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("rental_settings")
+    .update({ business_whatsapp: parsed.data.businessWhatsapp })
+    .eq("id", true)
+    .select("id");
+
+  if (error) return { error: dbErrorMessage(error, "Couldn't save the WhatsApp number. Try again.") };
+  if (data.length === 0) return { error: "Couldn't save the WhatsApp number. Try again." };
 
   revalidatePath("/owner/settings");
   return { success: true };
