@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/server";
-import type { EquipmentCategory, EquipmentStatus } from "@/lib/supabase/types";
+import type { EquipmentCategory, EquipmentStatus, KitContentItem } from "@/lib/supabase/types";
 import {
   addDays,
   dayIsBlocked,
@@ -21,9 +21,10 @@ export type PublicGear = {
   imageUrl: string | null;
   status: EquipmentStatus;
   dayRateSar: number | null;
+  kitContents: KitContentItem[];
 };
 
-const GEAR_COLUMNS = "id, barcode, name, category, description, image_url, status, day_rate_sar";
+const GEAR_COLUMNS = "id, barcode, name, category, description, image_url, status, day_rate_sar, kit_contents";
 
 export async function listPublicGear(): Promise<PublicGear[]> {
   const admin = createAdminClient();
@@ -118,6 +119,7 @@ function toPublicGear(row: {
   image_url: string | null;
   status: EquipmentStatus;
   day_rate_sar: number | string | null;
+  kit_contents: unknown;
 }): PublicGear {
   return {
     id: row.id,
@@ -128,10 +130,26 @@ function toPublicGear(row: {
     imageUrl: row.image_url,
     status: row.status,
     dayRateSar: toSar(row.day_rate_sar),
+    kitContents: toKitContents(row.kit_contents),
   };
 }
 
 function toSar(value: number | string | null | undefined) {
   const amount = value == null ? null : Number(value);
   return amount != null && Number.isFinite(amount) ? amount : null;
+}
+
+/** jsonb may be anything from the wire; keep only usable {label, qty} lines. */
+function toKitContents(value: unknown): KitContentItem[] {
+  if (!Array.isArray(value)) return [];
+  const items: KitContentItem[] = [];
+  for (const entry of value) {
+    if (!entry || typeof entry !== "object") continue;
+    const label = "label" in entry ? entry.label : null;
+    const qty = "qty" in entry ? Number(entry.qty) : NaN;
+    if (typeof label !== "string" || !label.trim()) continue;
+    if (!Number.isFinite(qty) || qty < 1) continue;
+    items.push({ label: label.trim(), qty: Math.floor(qty) });
+  }
+  return items;
 }
