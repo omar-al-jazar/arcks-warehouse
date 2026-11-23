@@ -39,6 +39,17 @@ export async function getPublicGear(barcode: string): Promise<PublicGear | null>
   return data ? toPublicGear(data) : null;
 }
 
+/**
+ * The Riyadh delivery fee, or null until the owner sets one. RLS lets only
+ * signed-in staff read rental_settings, so visitors get it through the service role.
+ */
+export async function getPublicDeliveryFee(): Promise<number | null> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("rental_settings").select("delivery_fee_sar").eq("id", true).maybeSingle();
+  if (error) throw error;
+  return toSar(data?.delivery_fee_sar);
+}
+
 export async function availabilityFor(gear: PublicGear, now = new Date()) {
   const today = riyadhToday(now);
   const blocks = await blocksFor(gear, now);
@@ -108,7 +119,6 @@ function toPublicGear(row: {
   status: EquipmentStatus;
   day_rate_sar: number | string | null;
 }): PublicGear {
-  const rate = row.day_rate_sar == null ? null : Number(row.day_rate_sar);
   return {
     id: row.id,
     barcode: row.barcode,
@@ -117,6 +127,11 @@ function toPublicGear(row: {
     description: row.description,
     imageUrl: row.image_url,
     status: row.status,
-    dayRateSar: rate != null && Number.isFinite(rate) ? rate : null,
+    dayRateSar: toSar(row.day_rate_sar),
   };
+}
+
+function toSar(value: number | string | null | undefined) {
+  const amount = value == null ? null : Number(value);
+  return amount != null && Number.isFinite(amount) ? amount : null;
 }
