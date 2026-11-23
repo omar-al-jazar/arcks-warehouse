@@ -1,0 +1,122 @@
+import "server-only";
+
+import { createAdminClient } from "@/lib/supabase/server";
+import type { EquipmentCategory, EquipmentStatus } from "@/lib/supabase/types";
+import {
+  addDays,
+  dayIsBlocked,
+  eachDay,
+  riyadhDate,
+  riyadhToday,
+  STRIP_DAYS,
+  type DateBlock,
+} from "@/lib/rent/dates";
+
+export type PublicGear = {
+  id: number;
+  barcode: string;
+  name: string;
+  category: EquipmentCategory;
+  description: string | null;
+  imageUrl: string | null;
+  status: EquipmentStatus;
+  dayRateSar: number | null;
+};
+
+const GEAR_COLUMNS = "id, barcode, name, category, description, image_url, status, day_rate_sar";
+
+export async function listPublicGear(): Promise<PublicGear[]> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("equipment").select(GEAR_COLUMNS).order("name");
+  if (error) throw error;
+  return (data ?? []).map(toPublicGear);
+}
+
+export async function getPublicGear(barcode: string): Promise<PublicGear | null> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("equipment").select(GEAR_COLUMNS).eq("barcode", barcode).maybeSingle();
+  if (error) throw error;
+  return data ? toPublicGear(data) : null;
+}
+
+export async function availabilityFor(gear: PublicGear, now = new Date()) {
+  const today = riyadhToday(now);
+  const blocks = await blocksFor(gear, now);
+  const days = eachDay(today, STRIP_DAYS).map((date) => ({
+    date,
+    booked: dayIsBlocked(date, blocks.ranges, blocks.blockedFrom),
+  }));
+  const free = days.filter((day) => !day.booked).length;
+  return { today, days, free, total: days.length };
+}
+
+async function blocksFor(gear: PublicGear, now: Date) {
+  if (gear.status === "maintenance") {
+    return { ranges: [] as DateBlock[], blockedFrom: "0000-01-01" };
+  }
+
+  const admin = createAdminClient();
+  const [checkouts, bookings] = await Promise.all([
+    admin
+      .from("checkout_items")
+      .select("checked_out_at, returned_at, checkout_orders(due_date)")
+      .eq("equipment_id", gear.id)
+      .is("returned_at", null),
+    admin
+      .from("bookings")
+      .select("start_date, end_date, status, held_until")
+      .eq("equipment_id", gear.id)
+      .in("status", ["held", "confirmed", "out"]),
+  ]);
+
+  if (checkouts.error) throw checkouts.error;
+  if (bookings.error) throw bookings.error;
+
+  const ranges: DateBlock[] = [];
+  let blockedFrom: string | undefined;
+
+  for (const item of checkouts.data ?? []) {
+    const order = item.checkout_orders as { due_date: string } | { due_date: string }[] | null;
+    const due = Array.isArray(order) ? order[0]?.due_date : order?.due_date;
+    const start = riyadhDate(item.checked_out_at);
+    if (!due || riyadhDate(due) < riyadhToday(now)) {
+      blockedFrom = blockedFrom && blockedFrom < start ? blockedFrom : start;
+      continue;
+    }
+    ranges.push({ start, end: addDays(riyadhDate(due), 1) });
+  }
+
+  if (gear.status === "checked_out" && (checkouts.data ?? []).length === 0) {
+    blockedFrom = riyadhToday(now);
+  }
+
+  for (const booking of bookings.data ?? []) {
+    if (booking.status === "held" && booking.held_until && new Date(booking.held_until) <= now) continue;
+    ranges.push({ start: booking.start_date, end: booking.end_date });
+  }
+
+  return { ranges, blockedFrom };
+}
+
+function toPublicGear(row: {
+  id: number;
+  barcode: string;
+  name: string;
+  category: EquipmentCategory;
+  description: string | null;
+  image_url: string | null;
+  status: EquipmentStatus;
+  day_rate_sar: number | string | null;
+}): PublicGear {
+  const rate = row.day_rate_sar == null ? null : Number(row.day_rate_sar);
+  return {
+    id: row.id,
+    barcode: row.barcode,
+    name: row.name,
+    category: row.category,
+    description: row.description,
+    imageUrl: row.image_url,
+    status: row.status,
+    dayRateSar: rate != null && Number.isFinite(rate) ? rate : null,
+  };
+}

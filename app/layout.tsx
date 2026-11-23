@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Manrope, Inter, IBM_Plex_Mono } from "next/font/google";
+import { Unbounded, Figtree, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const manrope = Manrope({
+const unbounded = Unbounded({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "700", "800"],
+  weight: ["500", "700"],
 });
 
-const inter = Inter({
+const figtree = Figtree({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
@@ -21,15 +21,15 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Arck's Warehouse",
-  description: "Equipment checkout and inventory tracking",
+  title: "ARC",
+  description: "Film equipment checkout and inventory",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`dark ${manrope.variable} ${inter.variable} ${plexMono.variable} h-full antialiased`}
+      className={`dark ${unbounded.variable} ${figtree.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

@@ -1,0 +1,64 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createAdminClient } from "@/lib/supabase/server";
+import { parseForm } from "@/lib/validation";
+import { reserveSchema } from "@/lib/schemas/rent";
+import { availabilityFor, getPublicGear } from "@/lib/rent/catalog";
+import { addDays, HOLD_HOURS, rentalDays, riyadhToday } from "@/lib/rent/dates";
+
+export type ReserveState = {
+  error?: string;
+  heldUntil?: string;
+};
+
+export async function reserveGear(_prev: ReserveState, formData: FormData): Promise<ReserveState> {
+  const parsed = parseForm(reserveSchema, formData);
+  if (!parsed.ok) return { error: parsed.error };
+
+  const gear = await getPublicGear(parsed.data.barcode);
+  if (!gear) return { error: "That piece is no longer listed." };
+  if (gear.status === "maintenance") return { error: "This piece is in maintenance." };
+
+  const today = riyadhToday();
+  if (parsed.data.start < today) return { error: "Pickup can't be in the past." };
+
+  const days = rentalDays(parsed.data.start, parsed.data.end);
+  if (days < 1) return { error: "Return must be after pickup." };
+
+  const { days: strip } = await availabilityFor(gear);
+  const wanted = Array.from({ length: days }, (_, index) => addDays(parsed.data.start, index));
+  const outside = wanted.some((day) => !strip.some((entry) => entry.date === day));
+  const blocked = wanted.some((day) => strip.find((entry) => entry.date === day)?.booked);
+  if (outside || blocked) return { error: "Those dates are already taken." };
+
+  const admin = createAdminClient();
+  const now = new Date();
+  await admin
+    .from("bookings")
+    .update({ status: "cancelled" })
+    .eq("equipment_id", gear.id)
+    .eq("status", "held")
+    .lte("held_until", now.toISOString());
+
+  const heldUntil = new Date(now.getTime() + HOLD_HOURS * 60 * 60 * 1000);
+  const { error } = await admin.from("bookings").insert({
+    equipment_id: gear.id,
+    start_date: parsed.data.start,
+    end_date: parsed.data.end,
+    fulfilment: parsed.data.fulfilment,
+    status: "held",
+    held_until: heldUntil.toISOString(),
+    customer_name: parsed.data.name,
+    customer_phone: parsed.data.phone,
+  });
+
+  if (error) {
+    if (error.code === "23P01") return { error: "Those dates were just reserved." };
+    console.error("[rent]", error);
+    return { error: "The hold didn't save. Try those dates again." };
+  }
+
+  revalidatePath(`/rent/${gear.barcode}`);
+  return { heldUntil: heldUntil.toISOString() };
+}

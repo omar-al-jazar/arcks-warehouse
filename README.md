@@ -1,6 +1,6 @@
-# Arck's Warehouse (shadcn/ui rebuild)
+# ARC
 
-A [shadcn/ui](https://ui.shadcn.com) + [Base UI](https://base-ui.com) rebuild of [Arck's Warehouse](../SaaS-1/README.md)'s frontend — same warehouse-tracking app for film/production equipment, same Postgres schema, rebuilt UI on Next.js 16. Runs on its own independent self-hosted Supabase stack (own Postgres, Auth, Kong, Storage), separate from the original app's stack.
+A [shadcn/ui](https://ui.shadcn.com) + [Base UI](https://base-ui.com) rebuild of the film-equipment warehouse app — same checkout and inventory job, same Postgres schema, UI on Next.js 16. The product name is ARC. Runs on its own independent self-hosted Supabase stack (own Postgres, Auth, Kong, Storage), separate from the original app's stack.
 
 ## Running it locally
 

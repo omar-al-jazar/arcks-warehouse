@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Field, FieldLabel, FieldGroup } from "@/components/ui/field";
+import { Field, FieldDescription, FieldLabel, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -24,12 +24,14 @@ export default function EditEquipmentButton({
   category,
   serialNumber,
   imageUrl,
+  dayRateSar,
 }: {
   equipmentId: number;
   name: string;
   category: EquipmentCategory;
   serialNumber: string | null;
   imageUrl: string | null;
+  dayRateSar: number | null;
 }) {
   const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState(async (prev: EquipmentFormState, formData: FormData) => {
@@ -72,6 +74,19 @@ export default function EditEquipmentButton({
             <Field>
               <FieldLabel htmlFor="edit-image">Image URL</FieldLabel>
               <Input id="edit-image" name="imageUrl" defaultValue={imageUrl ?? ""} placeholder="/equipment/name.jpg or https://..." />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="edit-day-rate">Day rate (SAR)</FieldLabel>
+              <Input
+                id="edit-day-rate"
+                name="dayRate"
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="0.01"
+                defaultValue={dayRateSar ?? ""}
+              />
+              <FieldDescription>Shown on the public rental page. Leave blank until you have a price.</FieldDescription>
             </Field>
           </FieldGroup>
 

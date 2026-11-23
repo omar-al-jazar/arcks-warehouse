@@ -119,6 +119,32 @@ export async function getOrderHistory() {
   }));
 }
 
+/** Public-site bookings, newest first. RLS limits this to signed-in staff. */
+export async function getBookings() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("*, equipment(name, barcode)")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+
+  // A hold past its deadline stays "held" in the table until the next reserve
+  // on that piece releases it, but its dates are already open to the public.
+  const now = Date.now();
+  return data.map((booking) => ({
+    ...booking,
+    expired:
+      booking.status === "held" && booking.held_until != null && new Date(booking.held_until).getTime() <= now,
+  }));
+}
+
+export async function getRentalSettings() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("rental_settings").select("delivery_fee_sar").maybeSingle();
+  if (error) throw error;
+  return { deliveryFeeSar: data?.delivery_fee_sar ?? null };
+}
+
 export async function findActiveCheckoutItemForEquipment(equipmentId: number) {
   const supabase = await createClient();
   const { data } = await supabase

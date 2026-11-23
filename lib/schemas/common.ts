@@ -20,3 +20,15 @@ export const optionalText = (max: number) =>
 
 /** Form fields arrive as "" when left empty — treat that as not provided. */
 export const blankAsMissing = (value: unknown) => (value === "" ? undefined : value);
+
+/** A price in SAR that may be left blank; blank becomes null ("not set yet"). */
+export const optionalSar = (label: string) =>
+  z.preprocess(
+    blankAsMissing,
+    z.coerce
+      .number(`${label} must be a number.`)
+      .min(0, `${label} can't be negative.`)
+      .max(1_000_000, `${label} is too large.`)
+      .nullable()
+      .default(null)
+  );

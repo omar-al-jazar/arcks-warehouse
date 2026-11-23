@@ -10,7 +10,7 @@ export default function NotFound() {
         <h1 className="font-heading text-lg font-semibold">Page not found</h1>
         <p className="text-sm text-muted-foreground">That page doesn&rsquo;t exist, or it has moved.</p>
         <Link href="/" className={buttonVariants({ className: "mt-2" })}>
-          Back to the warehouse
+          Back to ARC
         </Link>
       </Card>
     </div>

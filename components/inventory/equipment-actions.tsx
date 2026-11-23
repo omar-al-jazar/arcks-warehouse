@@ -11,6 +11,7 @@ export default function EquipmentActions({ item }: { item: Equipment }) {
         category={item.category}
         serialNumber={item.serial_number}
         imageUrl={item.image_url}
+        dayRateSar={item.day_rate_sar}
       />
       <EquipmentRowActions equipmentId={item.id} status={item.status} />
     </div>

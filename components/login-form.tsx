@@ -17,6 +17,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { FingerprintIcon } from "lucide-react";
+import ArcMark from "@/components/arc-mark";
 
 const initialState: LoginState = {};
 const PIN_LENGTH = 6;
@@ -107,10 +108,11 @@ export default function LoginForm({ next }: { next?: string }) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="arc-bay flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <CardTitle className="font-heading text-xl">Arck&rsquo;s Warehouse</CardTitle>
+        <CardHeader className="justify-items-center text-center">
+          <ArcMark />
+          <CardTitle className="sr-only">ARC</CardTitle>
           <CardDescription>Sign in to continue</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-6">

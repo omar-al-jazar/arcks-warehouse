@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { blankAsMissing, categorySchema, optionalText, requiredText } from "./common";
+import { blankAsMissing, categorySchema, optionalSar, optionalText, requiredText } from "./common";
 
 export const MIN_QUANTITY = 1;
 export const MAX_QUANTITY = 100;
@@ -31,6 +31,7 @@ export const updateEquipmentSchema = z.object({
   category: categorySchema,
   serialNumber: optionalText(120),
   imageUrl: optionalText(2048),
+  dayRate: optionalSar("Day rate"),
 });
 
 export const equipmentStatusSchema = z.object({

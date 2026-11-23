@@ -53,81 +53,80 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+:root,
+.dark {
+  /* Floor, bay, chalk, steel, arc. The arc is the lamp; it is the only bright color. */
+  --background: #0e1114;
+  --foreground: #e6eaf0;
+  --card: #171b20;
+  --card-foreground: #e6eaf0;
+  --popover: #171b20;
+  --popover-foreground: #e6eaf0;
+  --primary: #9ee7ff;
+  --primary-foreground: #0e1114;
+  --secondary: #222830;
+  --secondary-foreground: #e6eaf0;
+  --muted: #222830;
+  --muted-foreground: #8e98a3;
+  --accent: #222830;
+  --accent-foreground: #e6eaf0;
+  --destructive: #ef4444;
+  --border: #2a3138;
+  --input: #343d46;
+  --ring: #9ee7ff;
+  --chart-1: #9ee7ff;
+  --chart-2: #8e98a3;
+  --chart-3: #5e6974;
+  --chart-4: #3a434c;
+  --chart-5: #222830;
+  --radius: 0.5rem;
+  --sidebar: #171b20;
+  --sidebar-foreground: #e6eaf0;
+  --sidebar-primary: #9ee7ff;
+  --sidebar-primary-foreground: #0e1114;
+  --sidebar-accent: #222830;
+  --sidebar-accent-foreground: #e6eaf0;
+  --sidebar-border: #2a3138;
+  --sidebar-ring: #9ee7ff;
+  --good: #3dd68c;
+  --good-bg: rgba(61, 214, 140, 0.12);
+  --warn: #e2a84a;
+  --warn-bg: rgba(226, 168, 74, 0.12);
+  --destructive-bg: rgba(239, 68, 68, 0.12);
 }
 
-.dark {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --popover: #18181b;
-  --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #18181b;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --accent: #27272a;
-  --accent-foreground: #fafafa;
-  /* Semantic status colors — separate from the neutral accent above, used
-     only for equipment/order state (available/checked-out/overdue), never
-     as decoration. */
-  --good: #10b981;
-  --good-bg: rgba(16, 185, 129, 0.12);
-  --warn: #f59e0b;
-  --warn-bg: rgba(245, 158, 11, 0.12);
-  --destructive: #ef4444;
-  --destructive-bg: rgba(239, 68, 68, 0.12);
-  --border: #27272a;
-  --input: #3f3f46;
-  --ring: #71717a;
-  --chart-1: #fafafa;
-  --chart-2: #a1a1aa;
-  --chart-3: #71717a;
-  --chart-4: #52525b;
-  --chart-5: #3f3f46;
-  --sidebar: #18181b;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #fafafa;
-  --sidebar-primary-foreground: #18181b;
-  --sidebar-accent: #27272a;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #27272a;
-  --sidebar-ring: #71717a;
+.arc-bay {
+  background:
+    radial-gradient(ellipse 48% 36% at 0% 0%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 72%),
+    var(--background);
+}
+
+/* Public rental pages. Tungsten + daylight, scoped so the warehouse desk keeps ARC. */
+.rent {
+  --background: #0a0a0b;
+  --foreground: #f5f3f0;
+  --card: #141416;
+  --card-foreground: #f5f3f0;
+  --popover: #141416;
+  --popover-foreground: #f5f3f0;
+  --primary: #ffa534;
+  --primary-foreground: #0a0a0b;
+  --secondary: #1a1a1e;
+  --secondary-foreground: #f5f3f0;
+  --muted: #1a1a1e;
+  --muted-foreground: #9a9792;
+  --accent: #1a1a1e;
+  --accent-foreground: #f5f3f0;
+  --border: #2a2a2e;
+  --input: #2a2a2e;
+  --ring: #ffa534;
+  --daylight: #4da3ff;
+  --daylight-text: #9fcbff;
+  --daylight-bg: #16222e;
+  --daylight-line: #27465f;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), Inter, sans-serif;
 }
 
 @layer base {

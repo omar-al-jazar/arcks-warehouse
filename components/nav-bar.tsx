@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth-actions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import ArcMark from "@/components/arc-mark";
 
 type NavLink = { href: string; label: string };
 
@@ -30,9 +31,7 @@ export default function NavBar({
     <header className="border-b border-border bg-card/40 backdrop-blur">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
-          <span className="font-heading text-sm font-bold">
-            Arck&rsquo;s Warehouse
-          </span>
+          <ArcMark size="sm" />
           <Separator orientation="vertical" className="h-4" />
           <span className="text-sm text-muted-foreground">{title}</span>
         </div>

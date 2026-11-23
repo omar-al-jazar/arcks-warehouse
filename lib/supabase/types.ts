@@ -6,6 +6,8 @@ export type StaffRole = "manager" | "owner";
 export type EquipmentCategory = "camera" | "lighting" | "grip";
 export type EquipmentStatus = "available" | "checked_out" | "maintenance";
 export type OrderStatus = "active" | "completed";
+export type BookingStatus = "held" | "confirmed" | "out" | "returned" | "cancelled";
+export type BookingFulfilment = "delivery" | "collect";
 
 export type Database = {
   public: {
@@ -27,6 +29,8 @@ export type Database = {
           notes: string | null;
           serial_number: string | null;
           image_url: string | null;
+          day_rate_sar: number | null;
+          public_description: string | null;
           created_at: string;
         };
         Insert: {
@@ -39,6 +43,8 @@ export type Database = {
           notes?: string | null;
           serial_number?: string | null;
           image_url?: string | null;
+          day_rate_sar?: number | null;
+          public_description?: string | null;
           created_at?: string;
         };
         Update: Partial<{
@@ -51,6 +57,8 @@ export type Database = {
           notes: string | null;
           serial_number: string | null;
           image_url: string | null;
+          day_rate_sar: number | null;
+          public_description: string | null;
           created_at: string;
         }>;
         Relationships: [];
@@ -145,6 +153,53 @@ export type Database = {
           },
         ];
       };
+      bookings: {
+        Row: {
+          id: number;
+          equipment_id: number;
+          start_date: string;
+          end_date: string;
+          fulfilment: BookingFulfilment;
+          status: BookingStatus;
+          held_until: string | null;
+          customer_name: string;
+          customer_phone: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          equipment_id: number;
+          start_date: string;
+          end_date: string;
+          fulfilment: BookingFulfilment;
+          status?: BookingStatus;
+          held_until?: string | null;
+          customer_name: string;
+          customer_phone: string;
+          created_at?: string;
+        };
+        Update: Partial<{
+          id: number;
+          equipment_id: number;
+          start_date: string;
+          end_date: string;
+          fulfilment: BookingFulfilment;
+          status: BookingStatus;
+          held_until: string | null;
+          customer_name: string;
+          customer_phone: string;
+          created_at: string;
+        }>;
+        Relationships: [
+          {
+            foreignKeyName: "bookings_equipment_id_fkey";
+            columns: ["equipment_id"];
+            isOneToOne: false;
+            referencedRelation: "equipment";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -183,6 +238,8 @@ export type Database = {
       equipment_category: EquipmentCategory;
       equipment_status: EquipmentStatus;
       order_status: OrderStatus;
+      booking_status: BookingStatus;
+      booking_fulfilment: BookingFulfilment;
     };
     CompositeTypes: Record<string, never>;
   };
