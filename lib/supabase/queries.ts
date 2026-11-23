@@ -1,6 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { summarizeStatusCounts, type EquipmentStats } from "@/lib/equipment-stats";
+import { addDays } from "@/lib/rent/dates";
+import { stockBlocks, stockStateOn } from "@/lib/rent/stock";
 import type { EquipmentCategory, EquipmentStatus } from "@/lib/supabase/types";
 
 export async function getAllStaff() {
@@ -136,6 +138,55 @@ export async function getBookings() {
     expired:
       booking.status === "held" && booking.held_until != null && new Date(booking.held_until).getTime() <= now,
   }));
+}
+
+/**
+ * Every piece with its stock state on each of `days` (consecutive, oldest
+ * first), for the owner calendar. Three reads for the whole window.
+ */
+export async function getStockCalendar(days: string[], now = new Date()) {
+  const supabase = await createClient();
+  const [equipment, checkouts, bookings] = await Promise.all([
+    supabase.from("equipment").select("id, barcode, name, category, status").order("name"),
+    // Every open checkout, not just the window's: an overdue one blocks from the day it went out.
+    supabase
+      .from("checkout_items")
+      .select("equipment_id, checked_out_at, checkout_orders(due_date)")
+      .is("returned_at", null),
+    supabase
+      .from("bookings")
+      .select("equipment_id, start_date, end_date, status, held_until")
+      .in("status", ["held", "confirmed", "out"])
+      .lt("start_date", addDays(days[days.length - 1], 1))
+      .gt("end_date", days[0]),
+  ]);
+  if (equipment.error) throw equipment.error;
+  if (checkouts.error) throw checkouts.error;
+  if (bookings.error) throw bookings.error;
+
+  const openCheckouts = groupByPiece(
+    checkouts.data.map((item) => {
+      const order = item.checkout_orders as { due_date: string } | { due_date: string }[] | null;
+      const due = Array.isArray(order) ? order[0]?.due_date : order?.due_date;
+      return { equipment_id: item.equipment_id, checked_out_at: item.checked_out_at, due_date: due ?? null };
+    })
+  );
+  const liveBookings = groupByPiece(bookings.data);
+
+  return equipment.data.map((piece) => {
+    const blocks = stockBlocks(piece, openCheckouts.get(piece.id) ?? [], liveBookings.get(piece.id) ?? [], now);
+    return { ...piece, states: days.map((day) => stockStateOn(day, blocks)) };
+  });
+}
+
+function groupByPiece<T extends { equipment_id: number }>(rows: T[]) {
+  const groups = new Map<number, T[]>();
+  for (const row of rows) {
+    const group = groups.get(row.equipment_id);
+    if (group) group.push(row);
+    else groups.set(row.equipment_id, [row]);
+  }
+  return groups;
 }
 
 export async function getRentalSettings() {
