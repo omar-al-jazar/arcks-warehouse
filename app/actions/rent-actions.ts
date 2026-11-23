@@ -6,10 +6,12 @@ import { parseForm } from "@/lib/validation";
 import { reserveSchema } from "@/lib/schemas/rent";
 import { availabilityFor, getPublicGear } from "@/lib/rent/catalog";
 import { addDays, HOLD_HOURS, rentalDays, riyadhToday } from "@/lib/rent/dates";
+import { confirmationText, whatsappLink } from "@/lib/rent/whatsapp";
 
 export type ReserveState = {
   error?: string;
   heldUntil?: string;
+  whatsappUrl?: string;
 };
 
 export async function reserveGear(_prev: ReserveState, formData: FormData): Promise<ReserveState> {
@@ -60,5 +62,19 @@ export async function reserveGear(_prev: ReserveState, formData: FormData): Prom
   }
 
   revalidatePath(`/rent/${gear.barcode}`);
-  return { heldUntil: heldUntil.toISOString() };
+  revalidatePath("/owner/bookings");
+  // Email is not wired. Nothing here sends mail or pretends a message was delivered.
+  return {
+    heldUntil: heldUntil.toISOString(),
+    whatsappUrl: whatsappLink(
+      parsed.data.phone,
+      confirmationText({
+        customerName: parsed.data.name,
+        gearName: gear.name,
+        barcode: gear.barcode,
+        start: parsed.data.start,
+        end: parsed.data.end,
+      }),
+    ),
+  };
 }

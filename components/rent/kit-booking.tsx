@@ -3,7 +3,7 @@
 import { useActionState, useMemo, useState } from "react";
 import { reserveGear, type ReserveState } from "@/app/actions/rent-actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -58,9 +58,26 @@ export default function KitBooking({
       </p>
 
       {heldLabel ? (
-        <Alert>
-          <AlertDescription>Held until {heldLabel}. We'll confirm on WhatsApp. No card charged yet.</AlertDescription>
-        </Alert>
+        <div className="flex flex-col gap-3">
+          <Alert>
+            <AlertDescription>Held until {heldLabel}. We will confirm on WhatsApp. No card charged yet.</AlertDescription>
+          </Alert>
+          {state.whatsappUrl ? (
+            <>
+              <a
+                href={state.whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonVariants({ className: "h-12 w-full text-base" })}
+              >
+                Open the WhatsApp confirmation
+              </a>
+              <p className="text-center text-xs text-muted-foreground">
+                Opens a WhatsApp chat with the number you entered, with this hold ready to send.
+              </p>
+            </>
+          ) : null}
+        </div>
       ) : (
         <form action={action} className="flex flex-col gap-4">
           <input type="hidden" name="barcode" value={barcode} />
