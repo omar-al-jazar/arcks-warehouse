@@ -30,6 +30,25 @@ export async function decideBooking(bookingId: number, decision: "confirm" | "ca
   if (!parsed.ok) return { error: "Invalid request." };
 
   const supabase = await createClient();
+
+  // Do not confirm a hold past its deadline — dates are already open again.
+  if (parsed.data.decision === "confirm") {
+    const { data: row, error: readError } = await supabase
+      .from("bookings")
+      .select("id, status, held_until")
+      .eq("id", parsed.data.bookingId)
+      .maybeSingle();
+    if (readError) return { error: dbErrorMessage(readError, "Couldn't update the booking. Try again.") };
+    if (!row) return { error: "That booking has already changed. Refresh to see it." };
+    if (
+      row.status === "held" &&
+      row.held_until != null &&
+      new Date(row.held_until).getTime() <= Date.now()
+    ) {
+      return { error: "That hold expired. Cancel it or ask the customer to reserve again." };
+    }
+  }
+
   const { data, error } = await supabase
     .from("bookings")
     .update(
