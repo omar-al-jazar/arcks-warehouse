@@ -14,9 +14,9 @@ export type OpenCheckout = { checked_out_at: string; due_date: string | null };
 export type StockBooking = { start_date: string; end_date: string; status: BookingStatus; held_until: string | null };
 
 /**
- * The public site's blocking rule (blocksFor in lib/rent/catalog.ts), with
- * each block kept under the reason it exists. A day is taken here exactly
- * when the kit page shows it booked. Pass every open checkout for the piece.
+ * Shared blocking rule for the public kit page and Owner → Calendar.
+ * Each block is kept under the reason it exists. A day is taken when
+ * `stockStateOn` is not `"free"`. Pass every open checkout for the piece.
  */
 export function stockBlocks(
   piece: { status: EquipmentStatus },
