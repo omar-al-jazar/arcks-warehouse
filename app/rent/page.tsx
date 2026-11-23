@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { listPublicGear } from "@/lib/rent/catalog";
 import type { EquipmentCategory } from "@/lib/supabase/types";
 
@@ -12,6 +13,8 @@ const LABEL: Record<EquipmentCategory, string> = {
 export const metadata = { title: "Gear — [YOUR BRAND]" };
 
 export default async function RentIndexPage() {
+  // Without this the page is prerendered at build time, and the gear list and statuses never change.
+  await connection();
   const gear = await listPublicGear();
   const groups = ORDER.map((category) => ({
     category,
