@@ -2,7 +2,7 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 24 Nov 2026, 2:28 AM Riyadh time, by Cursor.
+Last updated 24 Nov 2026, 2:44 AM Riyadh time, by Cursor.
 
 ## Now: Phase 1, one bookable kit
 
@@ -10,40 +10,39 @@ A customer finds a kit, picks dates, sees the full price, and reserves it with a
 
 | # | Step | Status | Where it stands |
 |---|---|---|---|
-| 1 | Kit page: photo, day rate, dates, live availability | Done | `/rent/[barcode]`. Availability uses `stockBlocks`. Day rates: migration `0012` sets competitive Riyadh prices on unset rows (this PR). |
-| 2 | "What arrives" list | Done | Owner edits kit contents; public page lists them. |
-| 3 | Price: days × day rate + delivery + 15% VAT | Done | Quote stored on each hold (PR #3). Delivery fee left unset on purpose for now. |
-| 4 | Reserve holds the gear for 24 hours | Done | Overlap + rate-limit (#11). Expired holds labelled (#12). |
-| 5 | WhatsApp and email confirmation | Partly built | Button opens Settings number (#10). Business WhatsApp left unset on purpose for now. |
+| 1 | Kit page: photo, day rate, dates, live availability | Done | `/rent/[barcode]`. Availability uses `stockBlocks`. Live DB: all 140 pieces have `day_rate_sar` (min 40, max 3800, avg 364). |
+| 2 | "What arrives" list | Done | `kit_contents` column live; public page lists contents when set. |
+| 3 | Price: days × day rate + delivery + 15% VAT | Done | Quote columns on `bookings`. Delivery fee still unset. |
+| 4 | Reserve holds the gear for 24 hours | Done | `bookings` table + overlap constraint live. Rate-limit (#11). Expired labels (#12). |
+| 5 | WhatsApp and email confirmation | Partly built | Button opens Settings number (#10). `business_whatsapp` still unset. |
 | 6 | Owner's stock calendar | Done | Owner → Calendar / Bookings. |
-| 7 | Riyadh delivery with a real fee | Done | Settings field exists; fee not set yet (skipped). |
+| 7 | Riyadh delivery with a real fee | Done | `rental_settings` row exists; `delivery_fee_sar` unset (skipped). |
 
 ## Open work
 
-None waiting on review once this PR merges. Live DB still needs migrations **0008–0012** applied on the Barakat / gearroom Supabase (cloud agents cannot reach Tailscale).
+None waiting on review. Live schema **0007–0012** applied on Barakat (24 Nov). App container still the Sep 16 image — redeploy when you want code from `main` on the server.
 
 ## Next up, in order
 
-1. Apply `supabase/migrations/0008`–`0012` on the live Postgres (`docker compose exec -T db psql -U postgres -d postgres < file`).
+1. Redeploy the ARC app image on Barakat from current `main` (optional; DB is ahead of the Sep 16 container).
 2. Owner alert / email on new hold (deferred).
 3. Per-zone delivery, Arabic UI, animated hero — deferred on purpose.
 
 ## Waiting on the user
 
-- Barakat Claude: option **1** approved — backup, then apply `0007`–`0012` with stop-on-error (`docs/BARAKAT-CLAUDE-TASK.md`). Paste Before/After back to Cursor.
 - Send the business name and the first bookable kit when ready.
 - Set delivery fee / business WhatsApp later if you want those paths live.
+- Redeploy app when you want public `/rent` to match latest `main`.
 
 ## Known problems
 
 - Build should pass without a database after PR #5.
 - IP rate-limit is in-process only.
-- Tracker canvas cannot load remote images; shots are embedded as data URLs in the Arabic tracker.
+- Tracker canvas cannot load remote images; use repo `docs/tracker-shots/` or chat artifacts.
+- Barakat app HTTP 200 but may still be Sep 16 code until redeploy.
 
 ## Log
 
 - 23 Nov: public kit page and 24-hour holds. PR #1 merged.
-- 24 Nov: PRs #2–#13 merged. Tracker shots refreshed with Mini LF @ SAR 3,800 preview. Migration 0012 adds competitive day rates for unset rows (this branch).
-- 24 Nov (later): Added `scripts/barakat-apply-migrations.sh` + `docs/BARAKAT-CLAUDE-TASK.md` for Claude Remote Control on Barakat to apply 0008–0012.
-
-- 24 Nov: Barakat apply upgraded to option 1 — backup then 0007–0012 stop-on-error (Omar via Cursor).
+- 24 Nov: PRs #2–#16 merged. Tracker shots + competitive rates migration. Barakat Claude apply script.
+- 24 Nov, 2:44 AM Riyadh: Barakat applied **0007–0012**. Before: 140 equipment, no bookings/rental_settings. After: bookings + rental_settings live; 140/140 rates set (40–3800, avg 364); camera 26 / lighting 78 / grip 36; delivery fee and WhatsApp left empty; app HTTP 200.
