@@ -20,19 +20,19 @@ A customer finds a kit, picks dates, sees the full price, and reserves it with a
 
 ## Open work
 
-None waiting on review. Live schema **0007–0012** applied on Barakat (24 Nov). App container still the Sep 16 image — redeploy when you want code from `main` on the server.
+None waiting on review. Live schema **0007–0012** applied on Barakat (24 Nov). App redeploy from `main` handed to Barakat Claude (`scripts/barakat-redeploy-app.sh`).
 
 ## Next up, in order
 
-1. Redeploy the ARC app image on Barakat from current `main` (optional; DB is ahead of the Sep 16 container).
+1. Confirm Barakat app redeploy (Before/After HTTP + HEAD sha).
 2. Owner alert / email on new hold (deferred).
 3. Per-zone delivery, Arabic UI, animated hero — deferred on purpose.
 
 ## Waiting on the user
 
+- Paste the redeploy message in `docs/BARAKAT-CLAUDE-TASK.md` into the **barakat** Claude Code session (or approve if already sent).
 - Send the business name and the first bookable kit when ready.
 - Set delivery fee / business WhatsApp later if you want those paths live.
-- Redeploy app when you want public `/rent` to match latest `main`.
 
 ## Known problems
 
@@ -46,3 +46,5 @@ None waiting on review. Live schema **0007–0012** applied on Barakat (24 Nov).
 - 23 Nov: public kit page and 24-hour holds. PR #1 merged.
 - 24 Nov: PRs #2–#16 merged. Tracker shots + competitive rates migration. Barakat Claude apply script.
 - 24 Nov, 2:44 AM Riyadh: Barakat applied **0007–0012**. Before: 140 equipment, no bookings/rental_settings. After: bookings + rental_settings live; 140/140 rates set (40–3800, avg 364); camera 26 / lighting 78 / grip 36; delivery fee and WhatsApp left empty; app HTTP 200.
+
+- 24 Nov, ~2:48 AM Riyadh: Omar approved app redeploy from main; script + Barakat Claude task updated.
