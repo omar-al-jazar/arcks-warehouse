@@ -2,7 +2,7 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 24 Nov 2026, 1:53 AM Riyadh time, by Cursor.
+Last updated 24 Nov 2026, 2:28 AM Riyadh time, by Cursor.
 
 ## Now: Phase 1, one bookable kit
 
@@ -10,37 +10,37 @@ A customer finds a kit, picks dates, sees the full price, and reserves it with a
 
 | # | Step | Status | Where it stands |
 |---|---|---|---|
-| 1 | Kit page: photo, day rate, dates, live availability | Done | `/rent/[barcode]`. Shows `SAR [RATE]` until the piece has a day rate. Availability uses `stockBlocks` (same as Owner → Calendar). |
-| 2 | "What arrives" list | Done | Owner edits kit contents on Inventory → Edit (migration 0011). Public `/rent/[barcode]` lists `kit_contents` under “What arrives”; empty falls back to the piece ×1. |
-| 3 | Price: days × day rate + delivery + 15% VAT | Done | The saved delivery fee prices the card, and each hold stores its quote (PR #3). |
-| 4 | Reserve holds the gear for 24 hours | Done | Overlap constraint + IP/phone rate-limit (PR #11). Owner → Bookings shows expired holds as Expired and blocks Confirm (PR #12). |
-| 5 | WhatsApp and email confirmation | Partly built | After reserve, the button opens the business number from Owner → Settings (PR #10). Hidden when unset. No owner alert, no email. |
-| 6 | Owner's stock calendar | Done | Owner → Calendar shows every piece across 14 Riyadh days. Owner → Bookings lists holds with Confirm and Cancel (PR #5). |
-| 7 | Riyadh delivery with a real fee | Done | One flat fee, set in Owner → Settings (PR #3). |
+| 1 | Kit page: photo, day rate, dates, live availability | Done | `/rent/[barcode]`. Availability uses `stockBlocks`. Day rates: migration `0012` sets competitive Riyadh prices on unset rows (this PR). |
+| 2 | "What arrives" list | Done | Owner edits kit contents; public page lists them. |
+| 3 | Price: days × day rate + delivery + 15% VAT | Done | Quote stored on each hold (PR #3). Delivery fee left unset on purpose for now. |
+| 4 | Reserve holds the gear for 24 hours | Done | Overlap + rate-limit (#11). Expired holds labelled (#12). |
+| 5 | WhatsApp and email confirmation | Partly built | Button opens Settings number (#10). Business WhatsApp left unset on purpose for now. |
+| 6 | Owner's stock calendar | Done | Owner → Calendar / Bookings. |
+| 7 | Riyadh delivery with a real fee | Done | Settings field exists; fee not set yet (skipped). |
 
 ## Open work
 
-None waiting on review. PRs #2–#12 are merged to `main`. Phase 1 backlog items from STATUS are done except email / owner auto-alert.
+None waiting on review once this PR merges. Live DB still needs migrations **0008–0012** applied on the Barakat / gearroom Supabase (cloud agents cannot reach Tailscale).
 
 ## Next up, in order
 
-1. Owner alert / email on new hold (not planned yet as a Phase 1 must).
-2. Per-zone delivery, Arabic UI, animated hero — deferred on purpose.
-
-Not planned yet, on purpose: per-zone delivery fees, email, Arabic, an animated hero.
+1. Apply `supabase/migrations/0008`–`0012` on the live Postgres (`docker compose exec -T db psql -U postgres -d postgres < file`).
+2. Owner alert / email on new hold (deferred).
+3. Per-zone delivery, Arabic UI, animated hero — deferred on purpose.
 
 ## Waiting on the user
 
-- Set the delivery fee and business WhatsApp (Owner → Settings) and a day rate on at least one piece (Owner → Inventory → Edit).
-- Send the business name, its WhatsApp number, and the first bookable kit.
-- Apply migrations 0008–0011 to the live Supabase if not already applied.
+- Apply migrations 0008–0011 (schema) and 0012 (day rates) on the live server, or grant Tailscale/SSH so an agent can.
+- Send the business name and the first bookable kit when ready.
+- Set delivery fee / business WhatsApp later if you want those paths live.
 
 ## Known problems
 
-- Build should pass without a database after PR #5 (`/rent` is dynamic). Re-check if prerender errors return.
-- IP rate-limit is in-process only; multi-instance deploys share the phone limit via `bookings.created_at`, not the IP map.
+- Build should pass without a database after PR #5.
+- IP rate-limit is in-process only.
+- Tracker canvas cannot load remote images; shots are embedded as data URLs in the Arabic tracker.
 
 ## Log
 
-- 23 Nov: public kit page and 24-hour holds (`2893bf8`). PR #1, rental settings and owner bookings, merged (`02efb32`).
-- 24 Nov: PRs #2–#12 merged to `main`. Rate-limit (#11), expired hold labels (#12). Public kit page availability now calls `stockBlocks` (this branch).
+- 23 Nov: public kit page and 24-hour holds. PR #1 merged.
+- 24 Nov: PRs #2–#13 merged. Tracker shots refreshed with Mini LF @ SAR 3,800 preview. Migration 0012 adds competitive day rates for unset rows (this branch).
