@@ -2,15 +2,8 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/server";
 import type { EquipmentCategory, EquipmentStatus, KitContentItem } from "@/lib/supabase/types";
-import {
-  addDays,
-  dayIsBlocked,
-  eachDay,
-  riyadhDate,
-  riyadhToday,
-  STRIP_DAYS,
-  type DateBlock,
-} from "@/lib/rent/dates";
+import { eachDay, riyadhToday, STRIP_DAYS } from "@/lib/rent/dates";
+import { stockBlocks, stockStateOn, type OpenCheckout, type StockBooking } from "@/lib/rent/stock";
 
 export type PublicGear = {
   id: number;
@@ -71,17 +64,14 @@ export async function availabilityFor(gear: PublicGear, now = new Date()) {
   const blocks = await blocksFor(gear, now);
   const days = eachDay(today, STRIP_DAYS).map((date) => ({
     date,
-    booked: dayIsBlocked(date, blocks.ranges, blocks.blockedFrom),
+    booked: stockStateOn(date, blocks) !== "free",
   }));
   const free = days.filter((day) => !day.booked).length;
   return { today, days, free, total: days.length };
 }
 
+/** Same blocking rule as Owner → Calendar (`stockBlocks`). */
 async function blocksFor(gear: PublicGear, now: Date) {
-  if (gear.status === "maintenance") {
-    return { ranges: [] as DateBlock[], blockedFrom: "0000-01-01" };
-  }
-
   const admin = createAdminClient();
   const [checkouts, bookings] = await Promise.all([
     admin
@@ -99,30 +89,13 @@ async function blocksFor(gear: PublicGear, now: Date) {
   if (checkouts.error) throw checkouts.error;
   if (bookings.error) throw bookings.error;
 
-  const ranges: DateBlock[] = [];
-  let blockedFrom: string | undefined;
-
-  for (const item of checkouts.data ?? []) {
+  const openCheckouts: OpenCheckout[] = (checkouts.data ?? []).map((item) => {
     const order = item.checkout_orders as { due_date: string } | { due_date: string }[] | null;
     const due = Array.isArray(order) ? order[0]?.due_date : order?.due_date;
-    const start = riyadhDate(item.checked_out_at);
-    if (!due || riyadhDate(due) < riyadhToday(now)) {
-      blockedFrom = blockedFrom && blockedFrom < start ? blockedFrom : start;
-      continue;
-    }
-    ranges.push({ start, end: addDays(riyadhDate(due), 1) });
-  }
+    return { checked_out_at: item.checked_out_at, due_date: due ?? null };
+  });
 
-  if (gear.status === "checked_out" && (checkouts.data ?? []).length === 0) {
-    blockedFrom = riyadhToday(now);
-  }
-
-  for (const booking of bookings.data ?? []) {
-    if (booking.status === "held" && booking.held_until && new Date(booking.held_until) <= now) continue;
-    ranges.push({ start: booking.start_date, end: booking.end_date });
-  }
-
-  return { ranges, blockedFrom };
+  return stockBlocks(gear, openCheckouts, (bookings.data ?? []) as StockBooking[], now);
 }
 
 function toPublicGear(row: {
