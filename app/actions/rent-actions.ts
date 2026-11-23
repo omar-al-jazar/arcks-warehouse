@@ -11,6 +11,7 @@ import {
   getPublicGear,
 } from "@/lib/rent/catalog";
 import { addDays, HOLD_HOURS, quote, rentalDays, riyadhToday } from "@/lib/rent/dates";
+import { allowIp, allowPhone, clientIp } from "@/lib/rent/rate-limit";
 import { confirmationText, whatsappLink } from "@/lib/rent/whatsapp";
 
 export type ReserveState = {
@@ -22,6 +23,14 @@ export type ReserveState = {
 export async function reserveGear(_prev: ReserveState, formData: FormData): Promise<ReserveState> {
   const parsed = parseForm(reserveSchema, formData);
   if (!parsed.ok) return { error: parsed.error };
+
+  const ip = await clientIp();
+  if (!allowIp(ip)) {
+    return { error: "Too many reserves from this network. Wait a few minutes and try again." };
+  }
+  if (!(await allowPhone(parsed.data.phone))) {
+    return { error: "Too many reserves with this phone. Wait a few minutes and try again." };
+  }
 
   const gear = await getPublicGear(parsed.data.barcode);
   if (!gear) return { error: "That piece is no longer listed." };
