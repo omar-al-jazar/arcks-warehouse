@@ -201,9 +201,9 @@ export type Database = {
         ];
       };
       rental_settings: {
-        Row: { id: boolean; delivery_fee_sar: number | null };
-        Insert: { id?: boolean; delivery_fee_sar?: number | null };
-        Update: Partial<{ id: boolean; delivery_fee_sar: number | null }>;
+        Row: { id: boolean; delivery_fee_sar: number | null; business_whatsapp: string | null };
+        Insert: { id?: boolean; delivery_fee_sar?: number | null; business_whatsapp?: string | null };
+        Update: Partial<{ id: boolean; delivery_fee_sar: number | null; business_whatsapp: string | null }>;
         Relationships: [];
       };
     };

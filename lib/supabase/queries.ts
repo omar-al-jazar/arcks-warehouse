@@ -140,9 +140,15 @@ export async function getBookings() {
 
 export async function getRentalSettings() {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("rental_settings").select("delivery_fee_sar").maybeSingle();
+  const { data, error } = await supabase
+    .from("rental_settings")
+    .select("delivery_fee_sar, business_whatsapp")
+    .maybeSingle();
   if (error) throw error;
-  return { deliveryFeeSar: data?.delivery_fee_sar ?? null };
+  return {
+    deliveryFeeSar: data?.delivery_fee_sar ?? null,
+    businessWhatsapp: data?.business_whatsapp ?? null,
+  };
 }
 
 export async function findActiveCheckoutItemForEquipment(equipmentId: number) {

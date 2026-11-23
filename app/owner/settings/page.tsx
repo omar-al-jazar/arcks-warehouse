@@ -1,3 +1,4 @@
+import BusinessWhatsappForm from "@/components/business-whatsapp-form";
 import ChangePinForm from "@/components/change-pin-form";
 import DeliveryFeeForm from "@/components/delivery-fee-form";
 import RegisterPasskeyButton from "@/components/register-passkey-button";
@@ -16,6 +17,7 @@ export default async function OwnerSettingsPage() {
         <RegisterPasskeyButton />
       </Card>
       <DeliveryFeeForm deliveryFeeSar={settings.deliveryFeeSar} />
+      <BusinessWhatsappForm businessWhatsapp={settings.businessWhatsapp} />
     </div>
   );
 }
