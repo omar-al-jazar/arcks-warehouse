@@ -2,36 +2,36 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 24 Nov 2026, 12:12 PM Riyadh time, by Cursor.
+Last updated 24 Nov 2026, 1:46 PM Riyadh time, by Cursor.
 
-## Now: Arabic live on Barakat — domain purchased (name TBD)
+## Now: `arcfilmrental.com` opens the rental catalog
 
-Barakat app @ `7719ed7` (rsync + rebuild; folder is still not a git checkout). `/rent` is Arabic by default (`data-locale=ar`, `dir=rtl`). Gear names stay English.
+Signed-out visitors who open `/` are sent to `/rent` (Arabic shop, gear names in English). Signed-in staff still land on `/owner` or `/manager`. Sign-in stays at `/login`, with no link from the shop.
 
-Omar bought the public domain (exact hostname not recorded yet). Next: DNS → TLS → brand string.
+`https://arcfilmrental.com` is already serving this app through the Cloudflare tunnel. The public name on the shop is still the placeholder `[YOUR BRAND]`.
 
 | Area | Status |
 |---|---|
 | Phase 1–2 + security + Arabic/Thmanyah | Live @ `7719ed7` |
 | Brag video | `brag-output/brag.mp4` on `main` |
-| Official domain / HTTPS | Domain purchased — DNS/TLS not started |
+| Official domain / HTTPS | `arcfilmrental.com` live via Cloudflare tunnel |
 | Business WhatsApp | Unset |
 | Owner email on hold | Not built |
 
 ## Open work
 
-Wire the new domain (DNS + HTTPS). Need the exact hostname from Omar.
+1. Redeploy this homepage change to Barakat (rsync + rebuild app) so the live domain matches.
+2. Replace `[YOUR BRAND]` once the public name and logo file are in the repo.
 
 ## Next up, in order
 
-1. Record domain name → Porkbun DNS → TLS edge → point at public edge per `docs/HOSTING-BACKEND-PLAN.md`.
-2. Replace `[YOUR BRAND]` once brand string is final.
-3. Owner alert / email on new hold.
-4. PCA gaps: durable rate limits, reserve idempotency, decimal money, audit trail, CI.
+1. Redeploy so live `/` matches this branch, then replace `[YOUR BRAND]` with the real name and logo.
+2. Owner alert / email on new hold.
+3. PCA gaps: durable rate limits, reserve idempotency, decimal money, audit trail, CI.
 
 ## Waiting on the user
 
-- Paste the exact domain (e.g. `example.com`) and preferred apex vs `www`.
+- The logo file and the public name, so `[YOUR BRAND]` can come off the shop.
 - WhatsApp business number when ready.
 
 ## Known problems
@@ -45,3 +45,4 @@ Wire the new domain (DNS + HTTPS). Need the exact hostname from Omar.
 - 24 Nov, 4:18 AM: Security live @ `d559aef`.
 - 24 Nov, 4:38 AM: #28 merged (`7719ed7`).
 - 24 Nov, 12:12 PM Riyadh: Rsync `7719ed7` → Barakat; rebuild; `/` `/login` `/rent` `/rent/CAM-0005` 200; `data-locale=ar`. Domain purchased (hostname TBD).
+- 24 Nov, 1:46 PM Riyadh: `/` for a signed-out visitor redirects to `/rent`. Staff sign-in stays at `/login`.
