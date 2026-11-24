@@ -29,12 +29,18 @@ export function whatsappLink(phone: string, text?: string) {
 }
 
 /** Prefilled text for the hold confirmation chat between the house and the customer. */
-export function confirmationText(details: {
-  customerName: string;
-  gearName: string;
-  barcode: string;
-  start: string;
-  end: string;
-}) {
+export function confirmationText(
+  details: {
+    customerName: string;
+    gearName: string;
+    barcode: string;
+    start: string;
+    end: string;
+  },
+  locale: "en" | "ar" = "ar"
+) {
+  if (locale === "ar") {
+    return `هلا ${details.customerName}، أكد حجزك على ${details.gearName} (${details.barcode})، استلام ${details.start}، إرجاع ${details.end}.`;
+  }
   return `Hello ${details.customerName}, please confirm your hold on ${details.gearName} (${details.barcode}), pickup ${details.start}, return ${details.end}.`;
 }

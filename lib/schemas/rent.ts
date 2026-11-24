@@ -16,6 +16,7 @@ export const reserveSchema = z
       .string()
       .trim()
       .regex(/^\+?[0-9][0-9\s-]{7,18}$/, "Enter a WhatsApp number."),
+    locale: z.enum(["en", "ar"]).optional().default("ar"),
   })
   .refine((value) => value.end > value.start, { message: "Return must be after pickup.", path: ["end"] })
   .refine((value) => value.fulfilment === "collect" || Boolean(value.deliveryZone), {

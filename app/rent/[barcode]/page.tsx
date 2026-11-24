@@ -12,8 +12,9 @@ import { getRentLocale } from "@/lib/rent/locale";
 
 export async function generateMetadata({ params }: PageProps<"/rent/[barcode]">) {
   const { barcode } = await params;
-  const gear = await getPublicGear(barcode);
-  return { title: gear ? `${gear.name} — reserve` : "Gear" };
+  const [gear, locale] = await Promise.all([getPublicGear(barcode), getRentLocale()]);
+  const copy = rentCopy(locale);
+  return { title: gear ? copy.metaKitTitle(gear.name) : copy.metaTitle };
 }
 
 export default async function KitPage({ params }: PageProps<"/rent/[barcode]">) {
@@ -53,7 +54,7 @@ export default async function KitPage({ params }: PageProps<"/rent/[barcode]">) 
             />
           ) : (
             <div className="flex aspect-video w-full items-center justify-center rounded-xl border border-border bg-secondary text-xs font-semibold text-muted-foreground">
-              [ KIT PHOTO ]
+              {copy.kitPhotoPlaceholder}
             </div>
           )}
 
@@ -86,7 +87,14 @@ export default async function KitPage({ params }: PageProps<"/rent/[barcode]">) 
                     }
                   >
                     <span className="text-[10px] font-semibold">{dow}</span>
-                    <span className="text-[15px] font-bold">{Number(day.date.slice(8))}</span>
+                    <span className="text-[15px] font-bold">
+                      {locale === "ar"
+                        ? String(Number(day.date.slice(8))).replace(
+                            /[0-9]/g,
+                            (d) => "٠١٢٣٤٥٦٧٨٩"[Number(d)] ?? d
+                          )
+                        : Number(day.date.slice(8))}
+                    </span>
                     <span className="text-[9px] font-semibold">
                       {day.booked ? copy.booked : copy.free}
                     </span>
