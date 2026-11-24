@@ -2,40 +2,39 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 24 Nov 2026, 4:05 AM Riyadh time, by Cursor.
+Last updated 24 Nov 2026, 4:10 AM Riyadh time, by Cursor Cloud.
 
-## Now: Security hardening for public launch
+## Now: Finish on Omar’s local Cursor (Tailscale)
 
-Phase 2 (zones, Arabic, hero, kits) is live on Barakat @ `689b761`. This branch hardens auth, headers, robots, and rate limits before the official domain.
+Cloud cannot SSH to Barakat. **Next work runs on Omar’s machine** with Tailscale — see `docs/LOCAL-HANDOFF.md`.
 
-| # | Step | Status | Where it stands |
-|---|---|---|---|
-| 1–4, 6–9 | Bookable kit + zones + Arabic + hero | Done (live) | |
-| 5 | WhatsApp confirmation | Partly built | Number unset. |
-| 10 | Website security hardening | In progress | Login rate limit, safe redirects, CSP/frame/nosniff, robots/noindex staff, rent IP/phone limits tightened. |
+| Area | Status |
+|---|---|
+| Phase 1–2 product (kits, zones, Arabic, hero) | Live on Barakat @ `689b761` |
+| Security hardening (#25) | On `main` @ `d559aef` — **redeploy pending** |
+| Official domain / HTTPS | Planned; not started |
+| Business WhatsApp | Unset |
+| Owner email on hold | Not built |
 
 ## Open work
 
-Security hardening PR → merge → Barakat redeploy.
-
-## Next up, in order
-
-1. Redeploy security build on Barakat; smoke `/rent` + `/login`.
+1. Local agent: redeploy `d559aef`+ to Barakat and verify headers + kit HTTP 200.
 2. Owner alert / email on new hold.
-3. Domain → HTTPS (`docs/HOSTING-BACKEND-PLAN.md`).
+3. Domain → DNS → HTTPS (`docs/HOSTING-BACKEND-PLAN.md`).
 
 ## Waiting on the user
 
-- Paste Barakat redeploy after merge.
-- Business name, WhatsApp, domain when ready.
+- Open this repo in **Cursor Desktop on a Tailscale machine** and paste the prompt in `docs/LOCAL-HANDOFF.md`.
+- Domain choice / brand string / WhatsApp number when ready.
 
 ## Known problems
 
-- IP / login rate limits are still in-process (per container).
-- CSP allows `'unsafe-inline'` / `'unsafe-eval'` until nonces are wired for Next.
-- Build should pass without a database after PR #5.
+- Cloud agents cannot reach Tailscale; do not rely on Barakat Claude paste if local SSH works.
+- IP / login rate limits are in-process per container.
+- CSP still allows `'unsafe-inline'` / `'unsafe-eval'` until nonces.
 
 ## Log
 
-- 24 Nov, 4:00 AM Riyadh: Kit pages live @ `689b761`.
-- 24 Nov, 4:05 AM Riyadh: Security pass — open-redirect fix, PIN attempt cap, security headers, robots, rent rate-limit harden, unit tests (`npm test`).
+- 24 Nov, 4:00 AM Riyadh: Kits live @ `689b761`.
+- 24 Nov, 4:05 AM: Security #25 merged (`d559aef`).
+- 24 Nov, 4:10 AM: Hand off to local Cursor + Tailscale (`docs/LOCAL-HANDOFF.md`).
