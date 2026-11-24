@@ -2,6 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "@/lib/env";
 import { AUTH_COOKIE_NAME } from "@/lib/supabase/config";
+import { applySecurityHeaders } from "@/lib/security/headers";
+import { safeRedirectPath } from "@/lib/security/safe-redirect";
 
 export async function proxy(request: NextRequest) {
   const { url, anonKey } = getSupabaseEnv();
@@ -10,7 +12,7 @@ export async function proxy(request: NextRequest) {
   // session is refreshed: any rotated token is written onto both the
   // forwarded request (so the page render sees it) and the response.
   let response = NextResponse.next({ request });
-
+  applySecurityHeaders(response.headers);
   const supabase = createServerClient(url, anonKey, {
     cookieOptions: { name: AUTH_COOKIE_NAME },
     cookies: {
@@ -38,7 +40,8 @@ export async function proxy(request: NextRequest) {
 
   if (error || !claims) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", pathname + search);
+    const next = safeRedirectPath(pathname + search, "/");
+    if (next !== "/") loginUrl.searchParams.set("next", next);
     return redirectKeepingCookies(loginUrl, response);
   }
 
@@ -54,6 +57,7 @@ export async function proxy(request: NextRequest) {
 // lost unless its Set-Cookie headers are copied across.
 function redirectKeepingCookies(url: URL, from: NextResponse) {
   const redirect = NextResponse.redirect(url);
+  applySecurityHeaders(redirect.headers);
   from.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
   return redirect;
 }

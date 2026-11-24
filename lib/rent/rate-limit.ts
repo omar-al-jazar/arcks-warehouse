@@ -25,15 +25,16 @@ export async function clientIp(): Promise<string> {
 
 /** In-process IP cap. Soft on multi-instance hosts; still cuts hot loops. */
 export function allowIp(ip: string): boolean {
-  if (!ip) return true;
+  // Unknown IPs share one bucket so a missing header cannot bypass the cap.
+  const key = ip.trim() || "unknown";
   const now = Date.now();
-  const hits = prune(ipHits.get(ip) ?? [], now);
+  const hits = prune(ipHits.get(key) ?? [], now);
   if (hits.length >= MAX_PER_IP) {
-    ipHits.set(ip, hits);
+    ipHits.set(key, hits);
     return false;
   }
   hits.push(now);
-  ipHits.set(ip, hits);
+  ipHits.set(key, hits);
   return true;
 }
 
@@ -52,8 +53,8 @@ export async function allowPhone(phone: string): Promise<boolean> {
 
   if (error) {
     console.error("[rent/rate-limit]", error);
-    // Fail open on read errors so a DB blip doesn't freeze reserves.
-    return true;
+    // Fail closed: a DB blip should not open a spam window on the public form.
+    return false;
   }
   return (count ?? 0) < MAX_PER_PHONE;
 }

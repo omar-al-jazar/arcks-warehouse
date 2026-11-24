@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { safeRedirectPath } from "@/lib/security/safe-redirect";
 
 const LOGIN_MESSAGE = "Enter your 6-digit PIN to continue.";
 const PIN_STEP_MESSAGE = "Enter a 6-digit PIN at each step.";
@@ -9,9 +10,15 @@ export const loginSchema = z.object({
   // Length only (not digits-only): accounts created before PINs were
   // constrained to digits must still be able to sign in.
   pin: z.string(LOGIN_MESSAGE).min(6, LOGIN_MESSAGE).max(72, LOGIN_MESSAGE),
-  next: z.string().optional(),
+  next: z
+    .string()
+    .optional()
+    .transform((value) => {
+      if (!value) return undefined;
+      const path = safeRedirectPath(value, "");
+      return path || undefined;
+    }),
 });
-
 export const changePinSchema = z
   .object({ currentPin: pin, newPin: pin, confirmPin: pin })
   .refine((v) => v.newPin === v.confirmPin, { message: "New PINs didn't match. Try again.", path: ["confirmPin"] })

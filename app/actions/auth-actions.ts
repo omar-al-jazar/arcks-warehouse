@@ -5,6 +5,13 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { homeFor } from "@/lib/auth/roles";
 import { parseForm } from "@/lib/validation";
 import { changePinSchema, loginSchema } from "@/lib/schemas/auth";
+import { clientIp } from "@/lib/rent/rate-limit";
+import {
+  allowLoginAttempt,
+  clearLoginFailures,
+  recordLoginFailure,
+} from "@/lib/security/login-rate-limit";
+import { safeRedirectPath } from "@/lib/security/safe-redirect";
 
 export type LoginState = {
   error?: string;
@@ -20,6 +27,11 @@ export async function login(
   const parsed = parseForm(loginSchema, formData);
   if (!parsed.ok) return { error: parsed.error };
   const { role, pin, next } = parsed.data;
+
+  const ip = await clientIp();
+  if (!allowLoginAttempt(ip)) {
+    return { error: "Too many failed sign-ins. Wait a few minutes and try again." };
+  }
 
   // The lock screen only shows one "Manager" / "Owner" tile, but multiple
   // named accounts can share a role (e.g. several managers on a growing
@@ -42,10 +54,12 @@ export async function login(
   }
 
   if (!loggedIn) {
+    recordLoginFailure(ip);
     return { error: "That PIN wasn't recognized." };
   }
 
-  const destination = next?.startsWith("/") ? next : homeFor(role);
+  clearLoginFailures(ip);
+  const destination = safeRedirectPath(next, homeFor(role));
 
   // Checked server-side via Supabase (a SECURITY DEFINER RPC scoped to
   // auth.uid(), see migration 0005) rather than trusted from the client —
