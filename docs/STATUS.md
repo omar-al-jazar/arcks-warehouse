@@ -2,37 +2,39 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 24 Nov 2026, 12:12 PM Riyadh time, by Cursor.
+Last updated 24 Nov 2026, 12:18 PM Riyadh time, by Cursor.
 
-## Now: Arabic live on Barakat — domain purchased (name TBD)
+## Now: `arcfilmrental.com` — Caddy ready, DNS not pointed
 
-Barakat app @ `7719ed7` (rsync + rebuild; folder is still not a git checkout). `/rent` is Arabic by default (`data-locale=ar`, `dir=rtl`). Gear names stay English.
+Canonical host: `https://arcfilmrental.com` (`www` redirects). App stays Arabic on `/rent`.
 
-Omar bought the public domain (exact hostname not recorded yet). Next: DNS → TLS → brand string.
+Caddy on Barakat listens only on `192.168.100.13:80` and `:443` and proxies to `127.0.0.1:3001`. Firewall allows 80/443. Let’s Encrypt is waiting because Porkbun still parks the domain on `207.207.210.*`. No UPnP on the router, so 80/443 must be forwarded by hand to `192.168.100.13`.
 
 | Area | Status |
 |---|---|
 | Phase 1–2 + security + Arabic/Thmanyah | Live @ `7719ed7` |
-| Brag video | `brag-output/brag.mp4` on `main` |
-| Official domain / HTTPS | Domain purchased — DNS/TLS not started |
+| Official domain | `arcfilmrental.com` on Porkbun — DNS not switched |
+| HTTPS edge | Caddy container `arc-caddy` — cert pending DNS + port forward |
 | Business WhatsApp | Unset |
 | Owner email on hold | Not built |
 
 ## Open work
 
-Wire the new domain (DNS + HTTPS). Need the exact hostname from Omar.
+1. Porkbun: delete parking records; `A` apex and `www` → `129.208.123.56`.
+2. Router: forward TCP 80 and 443 to `192.168.100.13`.
+3. Confirm `https://arcfilmrental.com/rent` returns Arabic.
 
 ## Next up, in order
 
-1. Record domain name → Porkbun DNS → TLS edge → point at public edge per `docs/HOSTING-BACKEND-PLAN.md`.
-2. Replace `[YOUR BRAND]` once brand string is final.
+1. Finish DNS + router forward (above).
+2. Replace `[YOUR BRAND]` when the public name is final.
 3. Owner alert / email on new hold.
 4. PCA gaps: durable rate limits, reserve idempotency, decimal money, audit trail, CI.
 
 ## Waiting on the user
 
-- Paste the exact domain (e.g. `example.com`) and preferred apex vs `www`.
-- WhatsApp business number when ready.
+- Sign in to Porkbun so DNS can be edited (no API key stored).
+- Forward TCP 80 and 443 on the router (`192.168.100.1`) to `192.168.100.13`.
 
 ## Known problems
 
@@ -44,4 +46,5 @@ Wire the new domain (DNS + HTTPS). Need the exact hostname from Omar.
 
 - 24 Nov, 4:18 AM: Security live @ `d559aef`.
 - 24 Nov, 4:38 AM: #28 merged (`7719ed7`).
-- 24 Nov, 12:12 PM Riyadh: Rsync `7719ed7` → Barakat; rebuild; `/` `/login` `/rent` `/rent/CAM-0005` 200; `data-locale=ar`. Domain purchased (hostname TBD).
+- 24 Nov, 12:12 PM Riyadh: Rsync `7719ed7` → Barakat; rebuild; `/` `/login` `/rent` `/rent/CAM-0005` 200; `data-locale=ar`.
+- 24 Nov, 12:18 PM Riyadh: Domain is `arcfilmrental.com`. Caddy (`arc-caddy`) on `192.168.100.13:80/443` → app `:3001`. ufw allows 80/443. No UPnP. Porkbun still parking. Cert waits on A records to `129.208.123.56` plus router forward.
