@@ -2,6 +2,10 @@ import { requireRole } from "@/lib/auth/session";
 import { STAFF } from "@/lib/auth/roles";
 import NavBar from "@/components/nav-bar";
 
+export const metadata = {
+  robots: { index: false, follow: false },
+};
+
 export default async function ManagerLayout({ children }: LayoutProps<"/manager">) {
   const profile = await requireRole(STAFF);
 

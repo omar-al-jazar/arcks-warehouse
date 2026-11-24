@@ -2,51 +2,40 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 24 Nov 2026, 4:00 AM Riyadh time, by Cursor.
+Last updated 24 Nov 2026, 4:05 AM Riyadh time, by Cursor.
 
-## Now: Phase 2 live on Barakat
+## Now: Security hardening for public launch
 
-Zones, Arabic `/rent`, hero, and kit pages are live @ `689b761` (`.deployed-from-sha`; folder is not a git repo).
+Phase 2 (zones, Arabic, hero, kits) is live on Barakat @ `689b761`. This branch hardens auth, headers, robots, and rate limits before the official domain.
 
 | # | Step | Status | Where it stands |
 |---|---|---|---|
-| 1 | Kit page: photo, day rate, dates, live availability | Done | `/rent/CAM-*` and sample kits HTTP 200 after props fix. |
-| 2 | "What arrives" list | Done | |
-| 3 | Price: days × day rate + zone delivery + 15% VAT | Done | Zones show EN/AR names; fees 100 / 150 / 175 SAR. |
-| 4 | Reserve holds the gear for 24 hours | Done | |
-| 5 | WhatsApp and email confirmation | Partly built | Button wired; `business_whatsapp` still unset. |
-| 6 | Owner's stock calendar | Done | Owner routes 307 → login when unauthed. |
-| 7 | Riyadh delivery zones | Done | 5 zones live; DB untouched this deploy. |
-| 8 | Arabic UI on public rent | Done | Arabic renders on `/rent`. |
-| 9 | Animated `/rent` hero | Done | |
+| 1–4, 6–9 | Bookable kit + zones + Arabic + hero | Done (live) | |
+| 5 | WhatsApp confirmation | Partly built | Number unset. |
+| 10 | Website security hardening | In progress | Login rate limit, safe redirects, CSP/frame/nosniff, robots/noindex staff, rent IP/phone limits tightened. |
 
 ## Open work
 
-None. Barakat idle.
+Security hardening PR → merge → Barakat redeploy.
 
 ## Next up, in order
 
-1. Owner alert / email on new hold.
-2. Domain → HTTPS official site (`docs/HOSTING-BACKEND-PLAN.md`).
-3. Set business WhatsApp when Omar wants that path live.
+1. Redeploy security build on Barakat; smoke `/rent` + `/login`.
+2. Owner alert / email on new hold.
+3. Domain → HTTPS (`docs/HOSTING-BACKEND-PLAN.md`).
 
 ## Waiting on the user
 
-- Business name + first bookable kit for a smoke hold.
-- Domain purchase / DNS when ready for the official site.
-- Business WhatsApp number when ready.
+- Paste Barakat redeploy after merge.
+- Business name, WhatsApp, domain when ready.
 
 ## Known problems
 
+- IP / login rate limits are still in-process (per container).
+- CSP allows `'unsafe-inline'` / `'unsafe-eval'` until nonces are wired for Next.
 - Build should pass without a database after PR #5.
-- IP rate-limit is in-process only.
-- Barakat deploy folder is not a git checkout; sha lives in `.deployed-from-sha`.
-- Never pass objects containing functions from Server Components into Client Components.
 
 ## Log
 
-- 24 Nov, 3:15 AM Riyadh: First app redeploy @ `e9975b5` (`/rent` 200).
-- 24 Nov, 3:25–3:35 AM: Zones/Arabic/hero + hosting plan (domain first).
-- 24 Nov, ~3:50 AM: Zones build live; kit pages 500 (RentCopy functions → client).
-- 24 Nov, 3:55 AM: Fix merged (#23) — `KitBooking` takes `locale` only.
-- 24 Nov, 4:00 AM Riyadh: Redeploy @ `689b761` confirmed. `/rent` + kits 200; Arabic + zones visible; 0 app errors; DB untouched.
+- 24 Nov, 4:00 AM Riyadh: Kit pages live @ `689b761`.
+- 24 Nov, 4:05 AM Riyadh: Security pass — open-redirect fix, PIN attempt cap, security headers, robots, rent rate-limit harden, unit tests (`npm test`).

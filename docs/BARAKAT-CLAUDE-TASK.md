@@ -2,13 +2,21 @@
 
 Cursor Cloud cannot reach Tailscale. Claude Code on this server runs jobs when Cursor hands one over.
 
-## Current status (24 Nov 2026, 4:00 AM Riyadh)
+## Current decision (Omar via Cursor, 24 Nov 2026 Riyadh)
 
-**Idle.** Last job (redeploy after kit page 500 fix) succeeded.
+**Redeploy the app** after the security hardening merge on `main`.
 
-- Deployed `main` @ `689b761` (`.deployed-from-sha` — folder is not a git repo).
-- `/` `/login` `/rent` kit pages → 200; unknown barcode → 404; owner routes → 307 login.
-- Arabic + delivery zones visible; 5 zones, 140 equipment; WhatsApp still empty.
-- Only the app container was rebuilt.
+- Sync/rsync latest `main`, rebuild **only** the `app` container.
+- Do **not** touch the database.
+- Confirm `/rent`, a kit page, and `/login` return 200; owner routes still 307 when logged out.
+- Optional: response headers include `X-Frame-Options: DENY` and `X-Content-Type-Options: nosniff`.
 
-No new task until Cursor updates this file and Omar pastes a follow-up.
+## Paste into the Barakat Code session
+
+```
+Omar via Cursor: main has security hardening (login rate limit, safe redirects, headers, robots). Redeploy the ARC app only.
+
+Sync main, then: bash scripts/barakat-redeploy-app.sh
+
+Do not touch the database. Confirm /rent + /rent/CAM-0005 + /login = 200, owner routes 307 when logged out, and paste deployed sha + any header check back to Cursor.
+```

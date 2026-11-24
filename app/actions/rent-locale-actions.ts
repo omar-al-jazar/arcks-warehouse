@@ -11,6 +11,8 @@ export async function setRentLocale(locale: RentLocale) {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
     sameSite: "lax",
+    // Secure when the request is HTTPS (official domain); fine on local HTTP.
+    secure: process.env.NODE_ENV === "production",
   });
   revalidatePath("/rent");
 }

@@ -18,12 +18,14 @@ import {
 } from "@/components/ui/dialog";
 import { FingerprintIcon } from "lucide-react";
 import ArcMark from "@/components/arc-mark";
+import { safeRedirectPath } from "@/lib/security/safe-redirect";
 
 const initialState: LoginState = {};
 const PIN_LENGTH = 6;
 const ROLE_LABEL = { owner: "Owner", manager: "Warehouse Manager" } as const;
 
 export default function LoginForm({ next }: { next?: string }) {
+  const safeNext = next ? safeRedirectPath(next, "") : "";
   const [role, setRole] = useState<"owner" | "manager">("manager");
   const [pin, setPin] = useState("");
   const [state, formAction, pending] = useActionState(async (prev: LoginState, formData: FormData) => {
@@ -58,8 +60,7 @@ export default function LoginForm({ next }: { next?: string }) {
   }, [pin]);
 
   function navigateToDestination() {
-    const destination = state.destination && state.destination.startsWith("/") ? state.destination : "/";
-    window.location.assign(destination);
+    window.location.assign(safeRedirectPath(state.destination, "/"));
   }
 
   useEffect(() => {
@@ -92,7 +93,7 @@ export default function LoginForm({ next }: { next?: string }) {
       setBiometricError(error.message);
       return;
     }
-    window.location.assign(next && next.startsWith("/") ? next : "/");
+    window.location.assign(safeRedirectPath(safeNext || undefined, "/"));
   }
 
   async function setupPasskey() {
@@ -138,7 +139,7 @@ export default function LoginForm({ next }: { next?: string }) {
           <form ref={formRef} action={formAction} className="flex flex-col items-center gap-2">
             <input type="hidden" name="role" value={role} />
             <input type="hidden" name="pin" value={pin} />
-            {next ? <input type="hidden" name="next" value={next} /> : null}
+            {safeNext ? <input type="hidden" name="next" value={safeNext} /> : null}
             <p className="text-sm text-muted-foreground">Enter the 6-digit PIN for {ROLE_LABEL[role]}</p>
             <InputOTP
               maxLength={PIN_LENGTH}
