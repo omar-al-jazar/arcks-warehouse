@@ -6,10 +6,19 @@ export const reserveSchema = z
     start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Choose a pickup date."),
     end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Choose a return date."),
     fulfilment: z.enum(["delivery", "collect"], { error: "Choose delivery or collection." }),
+    deliveryZone: z
+      .string()
+      .trim()
+      .optional()
+      .transform((value) => (value && value.length > 0 ? value : undefined)),
     name: z.string().trim().min(2, "Enter your name.").max(80, "Name is too long."),
     phone: z
       .string()
       .trim()
       .regex(/^\+?[0-9][0-9\s-]{7,18}$/, "Enter a WhatsApp number."),
   })
-  .refine((value) => value.end > value.start, { message: "Return must be after pickup.", path: ["end"] });
+  .refine((value) => value.end > value.start, { message: "Return must be after pickup.", path: ["end"] })
+  .refine((value) => value.fulfilment === "collect" || Boolean(value.deliveryZone), {
+    message: "Choose a delivery zone.",
+    path: ["deliveryZone"],
+  });

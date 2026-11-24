@@ -73,6 +73,9 @@ export default async function OwnerBookingsPage() {
                 const gear = Array.isArray(booking.equipment) ? booking.equipment[0] : booking.equipment;
                 const gearName = gear?.name ?? "Reserved piece";
                 const barcode = gear?.barcode ?? "—";
+                const zone = Array.isArray(booking.delivery_zones)
+                  ? booking.delivery_zones[0]
+                  : booking.delivery_zones;
                 const liveHold = booking.status === "held" && !booking.expired;
                 const canChange = liveHold || booking.status === "confirmed" || booking.expired;
                 const href = whatsappLink(
@@ -103,7 +106,11 @@ export default async function OwnerBookingsPage() {
                           ) : null}
                           {booking.delivery_fee_sar != null ? (
                             <span className="text-xs text-muted-foreground">
-                              {booking.fulfilment === "collect" ? "Collect" : "Delivery"}{" "}
+                              {booking.fulfilment === "collect"
+                                ? "Collect"
+                                : zone?.name_en
+                                  ? `Delivery · ${zone.name_en}`
+                                  : "Delivery"}{" "}
                               {formatSar(booking.delivery_fee_sar, "")}
                             </span>
                           ) : null}

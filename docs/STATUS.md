@@ -2,36 +2,39 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 24 Nov 2026, 3:15 AM Riyadh time, by Cursor.
+Last updated 24 Nov 2026, 3:25 AM Riyadh time, by Cursor.
 
-## Now: Phase 1, one bookable kit
+## Now: Phase 2 surface — zones, Arabic, hero
 
-A customer finds a kit, picks dates, sees the full price, and reserves it with a 24-hour hold. The one number that matters is the time from landing on the site to a held reservation.
+Phase 1 (one bookable kit) is live on Barakat @ `e9975b5`. This branch adds Riyadh per-zone delivery, Arabic/English on `/rent`, and an animated hero. Needs migration **0013** + app redeploy on Barakat.
 
 | # | Step | Status | Where it stands |
 |---|---|---|---|
-| 1 | Kit page: photo, day rate, dates, live availability | Done | Live `/rent` + `/rent/CAM-0005` HTTP 200 after redeploy. Availability uses `stockBlocks`. All 140 pieces have `day_rate_sar` (min 40, max 3800, avg 364). |
-| 2 | "What arrives" list | Done | `kit_contents` column live; public page lists contents when set. |
-| 3 | Price: days × day rate + delivery + 15% VAT | Done | Quote columns on `bookings`. Delivery fee still unset. |
-| 4 | Reserve holds the gear for 24 hours | Done | `bookings` table + overlap constraint live. Rate-limit (#11). Expired labels (#12). |
-| 5 | WhatsApp and email confirmation | Partly built | Button opens Settings number (#10). `business_whatsapp` still unset. |
-| 6 | Owner's stock calendar | Done | Owner → Calendar / Bookings (307 → login when unauthed). |
-| 7 | Riyadh delivery with a real fee | Done | `rental_settings` row exists; `delivery_fee_sar` unset (skipped). |
+| 1 | Kit page: photo, day rate, dates, live availability | Done | Live `/rent` + kit pages. |
+| 2 | "What arrives" list | Done | `kit_contents` when set. |
+| 3 | Price: days × day rate + delivery + 15% VAT | Done | Zone fee when fulfilment is delivery; house fee is fallback. |
+| 4 | Reserve holds the gear for 24 hours | Done | Rate-limit + expired labels. |
+| 5 | WhatsApp and email confirmation | Partly built | Button wired; number still unset. |
+| 6 | Owner's stock calendar | Done | |
+| 7 | Riyadh delivery with a real fee | Done | Five zones seeded (center/north/east/west/south); owner edits fees. |
+| 8 | Arabic UI on public rent | Done (code) | Cookie locale + RTL; gear names still English from DB. |
+| 9 | Animated `/rent` hero | Done (code) | Full-bleed tungsten/daylight hero. |
 
 ## Open work
 
-None. Live schema **0007–0012** applied. App redeployed on Barakat from `main` @ `e9975b5` (recorded in `.deployed-from-sha`; folder is not a git repo).
+PR for zones + Arabic + hero + hosting plan. After merge: Barakat apply `0013` then redeploy app.
 
 ## Next up, in order
 
-1. Owner alert / email on new hold (deferred).
-2. Set delivery fee / business WhatsApp when Omar wants those paths live.
-3. Per-zone delivery, Arabic UI, animated hero — deferred on purpose.
+1. Apply **0013** on Barakat + redeploy (see `docs/BARAKAT-CLAUDE-TASK.md`).
+2. Owner alert / email on new hold.
+3. Execute 0–3 month hosting plan (`docs/HOSTING-BACKEND-PLAN.md`): backups, git deploy hygiene, health alerts.
 
 ## Waiting on the user
 
-- Send the business name and the first bookable kit when ready.
-- Set delivery fee / business WhatsApp later if you want those paths live.
+- Paste the Barakat task after this PR merges.
+- Business name + first bookable kit for a live smoke hold.
+- Business WhatsApp when you want that path live.
 
 ## Known problems
 
@@ -39,13 +42,11 @@ None. Live schema **0007–0012** applied. App redeployed on Barakat from `main`
 - IP rate-limit is in-process only.
 - Tracker canvas cannot load remote images; use repo `docs/tracker-shots/` or chat artifacts.
 - Barakat deploy folder is not a git checkout; sha lives in `.deployed-from-sha`.
+- Until **0013** is applied, Owner → Settings zone form and delivery reserves that require zones will fail against live DB.
 
 ## Log
 
 - 23 Nov: public kit page and 24-hour holds. PR #1 merged.
-- 24 Nov: PRs #2–#16 merged. Tracker shots + competitive rates migration. Barakat Claude apply script.
-- 24 Nov, 2:44 AM Riyadh: Barakat applied **0007–0012**. Before: 140 equipment, no bookings/rental_settings. After: bookings + rental_settings live; 140/140 rates set (40–3800, avg 364); camera 26 / lighting 78 / grip 36; delivery fee and WhatsApp left empty; app HTTP 200.
-
-- 24 Nov, ~2:48 AM Riyadh: Omar approved app redeploy from main; script + Barakat Claude task updated.
-- 24 Nov, 2:52 AM Riyadh: Merged #18 (redeploy script). Paste for Barakat Claude ready.
-- 24 Nov, 3:15 AM Riyadh: Barakat redeploy **confirmed**. Before: `/rent` and `/rent/CAM-0005` 404. After: both 200; `/rent/NOPE-0000` 404; owner routes 307→login; DB untouched (140 rows, fee/WhatsApp empty); 12 other containers kept; main @ `e9975b5`.
+- 24 Nov: PRs #2–#16 merged. Tracker shots + competitive rates. Barakat apply + redeploy @ `e9975b5`.
+- 24 Nov, 3:15 AM Riyadh: Redeploy confirmed (`/rent` 200).
+- 24 Nov, 3:25 AM Riyadh: Built per-zone delivery (0013), Arabic `/rent`, animated hero, hosting/backend plan 0–3 and 3–5 months.
