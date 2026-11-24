@@ -17,7 +17,7 @@ import {
   RIYADH,
   type Fulfilment,
 } from "@/lib/rent/dates";
-import { formatSarLocale, type RentCopy, type RentLocale } from "@/lib/rent/i18n";
+import { formatSarLocale, rentCopy, type RentLocale } from "@/lib/rent/i18n";
 
 type Day = { date: string; booked: boolean };
 
@@ -38,7 +38,6 @@ export default function KitBooking({
   fallbackFeeSar,
   days,
   locale,
-  copy,
 }: {
   barcode: string;
   dayRateSar: number | null;
@@ -46,8 +45,9 @@ export default function KitBooking({
   fallbackFeeSar: number | null;
   days: Day[];
   locale: RentLocale;
-  copy: RentCopy;
 }) {
+  // Resolve copy here — never pass RentCopy from a Server Component (it holds functions).
+  const copy = rentCopy(locale);
   const stay = defaultStay(days);
   const [start, setStart] = useState(stay?.start ?? days[0]?.date ?? "");
   const [end, setEnd] = useState(stay?.end ?? "");

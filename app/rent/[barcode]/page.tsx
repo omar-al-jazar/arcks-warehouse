@@ -123,7 +123,6 @@ export default async function KitPage({ params }: PageProps<"/rent/[barcode]">) 
           fallbackFeeSar={deliveryFeeSar}
           days={availability.days}
           locale={locale}
-          copy={copy}
         />
       </div>
     </main>
