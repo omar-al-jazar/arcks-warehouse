@@ -10,7 +10,7 @@ Assumes live Barakat Mac Pro + Tailscale + Docker Compose self-hosted Supabase (
 |---|---|
 | Next.js app | Docker `app` on Barakat (`:3001`) |
 | Postgres / Auth / Kong / Storage | Same compose stack on Barakat |
-| Public `/rent` + owner desk | Same origin; **no custom domain / public DNS yet** |
+| Public `/rent` + owner desk | Same origin; **domain purchased (hostname TBD — wire DNS + TLS next)** |
 | Ops | Claude Code on Barakat (Tailscale); Cursor Cloud cannot join the tailnet |
 
 Risks today: no official hostname for customers, single machine, no automated offsite Postgres backup, deploy folder may not be a git checkout (sha in `.deployed-from-sha`), IP rate-limit is in-process only.
@@ -23,7 +23,7 @@ Goal: customers reach ARC on **your domain over HTTPS**, while Barakat stays rec
 
 ### A. Domain & official website (do this first)
 
-1. **Buy the domain** (prefer `.sa` if the brand is Saudi-facing; otherwise a clear `.com` you control long-term).
+1. **Buy the domain** — **done** (Omar, 24 Nov 2026). Record the exact hostname in `docs/STATUS.md` before DNS.
 2. **DNS**
    - `A`/`AAAA` (or CNAME) for `www` and apex → the public edge (Barakat’s public IP **only if** you accept exposing it, or a small fronting VPS / Cloudflare proxy).
    - Optional: `rent.` or keep everything on apex/`www` with `/rent` as the booking path (current app).
