@@ -7,8 +7,8 @@ import { reserveSchema } from "@/lib/schemas/rent";
 import {
   availabilityFor,
   getPublicBusinessWhatsapp,
-  getPublicDeliveryFee,
   getPublicGear,
+  resolveDeliveryFee,
 } from "@/lib/rent/catalog";
 import { addDays, HOLD_HOURS, quote, rentalDays, riyadhToday } from "@/lib/rent/dates";
 import { allowIp, allowPhone, clientIp } from "@/lib/rent/rate-limit";
@@ -42,18 +42,24 @@ export async function reserveGear(_prev: ReserveState, formData: FormData): Prom
   const days = rentalDays(parsed.data.start, parsed.data.end);
   if (days < 1) return { error: "Return must be after pickup." };
 
-  const [{ days: strip }, deliveryFeeSar, businessWhatsapp] = await Promise.all([
+  const [{ days: strip }, businessWhatsapp, delivery] = await Promise.all([
     availabilityFor(gear),
-    getPublicDeliveryFee(),
     getPublicBusinessWhatsapp(),
+    resolveDeliveryFee(
+      parsed.data.fulfilment === "delivery" ? parsed.data.deliveryZone : undefined
+    ),
   ]);
   const wanted = Array.from({ length: days }, (_, index) => addDays(parsed.data.start, index));
   const outside = wanted.some((day) => !strip.some((entry) => entry.date === day));
   const blocked = wanted.some((day) => strip.find((entry) => entry.date === day)?.booked);
   if (outside || blocked) return { error: "Those dates are already taken." };
 
-  // Price from the stored day rate and fee only. Never accept an amount from the form.
-  const priced = quote(days, gear.dayRateSar, parsed.data.fulfilment, deliveryFeeSar);
+  if (parsed.data.fulfilment === "delivery" && delivery.zoneId == null) {
+    return { error: "Choose a delivery zone." };
+  }
+
+  // Price from the stored day rate and zone fee only. Never accept an amount from the form.
+  const priced = quote(days, gear.dayRateSar, parsed.data.fulfilment, delivery.feeSar);
 
   const admin = createAdminClient();
   const now = new Date();
@@ -76,10 +82,10 @@ export async function reserveGear(_prev: ReserveState, formData: FormData): Prom
     customer_phone: parsed.data.phone,
     day_rate_sar: gear.dayRateSar,
     delivery_fee_sar: priced.fee,
+    delivery_zone_id: parsed.data.fulfilment === "delivery" ? delivery.zoneId : null,
     vat_sar: priced.vat,
     total_sar: priced.total,
   });
-
   if (error) {
     if (error.code === "23P01") return { error: "Those dates were just reserved." };
     console.error("[rent]", error);

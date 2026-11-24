@@ -173,6 +173,7 @@ export type Database = {
           created_at: string;
           day_rate_sar: number | null;
           delivery_fee_sar: number | null;
+          delivery_zone_id: number | null;
           vat_sar: number | null;
           total_sar: number | null;
         };
@@ -189,6 +190,7 @@ export type Database = {
           created_at?: string;
           day_rate_sar?: number | null;
           delivery_fee_sar?: number | null;
+          delivery_zone_id?: number | null;
           vat_sar?: number | null;
           total_sar?: number | null;
         };
@@ -205,6 +207,7 @@ export type Database = {
           created_at: string;
           day_rate_sar: number | null;
           delivery_fee_sar: number | null;
+          delivery_zone_id: number | null;
           vat_sar: number | null;
           total_sar: number | null;
         }>;
@@ -216,7 +219,44 @@ export type Database = {
             referencedRelation: "equipment";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "bookings_delivery_zone_id_fkey";
+            columns: ["delivery_zone_id"];
+            isOneToOne: false;
+            referencedRelation: "delivery_zones";
+            referencedColumns: ["id"];
+          },
         ];
+      };
+      delivery_zones: {
+        Row: {
+          id: number;
+          slug: string;
+          name_en: string;
+          name_ar: string;
+          fee_sar: number | null;
+          sort_order: number;
+          active: boolean;
+        };
+        Insert: {
+          id?: number;
+          slug: string;
+          name_en: string;
+          name_ar: string;
+          fee_sar?: number | null;
+          sort_order?: number;
+          active?: boolean;
+        };
+        Update: Partial<{
+          id: number;
+          slug: string;
+          name_en: string;
+          name_ar: string;
+          fee_sar: number | null;
+          sort_order: number;
+          active: boolean;
+        }>;
+        Relationships: [];
       };
       rental_settings: {
         Row: { id: boolean; delivery_fee_sar: number | null; business_whatsapp: string | null };

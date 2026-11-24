@@ -126,7 +126,7 @@ export async function getBookings() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("bookings")
-    .select("*, equipment(name, barcode)")
+    .select("*, equipment(name, barcode), delivery_zones(name_en)")
     .order("created_at", { ascending: false });
   if (error) throw error;
 
@@ -200,6 +200,33 @@ export async function getRentalSettings() {
     deliveryFeeSar: data?.delivery_fee_sar ?? null,
     businessWhatsapp: data?.business_whatsapp ?? null,
   };
+}
+
+export type OwnerDeliveryZone = {
+  id: number;
+  slug: string;
+  nameEn: string;
+  nameAr: string;
+  feeSar: number | null;
+  sortOrder: number;
+};
+
+export async function getDeliveryZones(): Promise<OwnerDeliveryZone[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("delivery_zones")
+    .select("id, slug, name_en, name_ar, fee_sar, sort_order")
+    .eq("active", true)
+    .order("sort_order");
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    nameEn: row.name_en,
+    nameAr: row.name_ar,
+    feeSar: row.fee_sar == null ? null : Number(row.fee_sar),
+    sortOrder: row.sort_order,
+  }));
 }
 
 export async function findActiveCheckoutItemForEquipment(equipmentId: number) {

@@ -11,6 +11,21 @@ export const deliveryFeeSchema = z.object({
   deliveryFee: optionalSar("Delivery fee"),
 });
 
+/** Owner Settings: one fee field per zone slug (`fee_<slug>`). Blank clears. */
+export const deliveryZonesSchema = z.object({
+  zones: z
+    .string()
+    .trim()
+    .min(1, "No zones to save.")
+    .transform((raw) =>
+      raw
+        .split(",")
+        .map((slug) => slug.trim())
+        .filter(Boolean)
+    )
+    .refine((slugs) => slugs.length > 0, "No zones to save."),
+});
+
 /** Owner Settings: blank clears; otherwise store wa.me digits (9665…). */
 export const businessWhatsappSchema = z.object({
   businessWhatsapp: z

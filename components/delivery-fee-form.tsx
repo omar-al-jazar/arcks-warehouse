@@ -27,7 +27,9 @@ export default function DeliveryFeeForm({ deliveryFeeSar }: { deliveryFeeSar: nu
             step="0.01"
             defaultValue={deliveryFeeSar ?? ""}
           />
-          <FieldDescription>Added to delivery bookings before VAT. Leave blank until you have a price.</FieldDescription>
+          <FieldDescription>
+            Fallback fee when a zone has no price. Prefer the zone fees above for Riyadh deliveries.
+          </FieldDescription>
         </Field>
         <Button type="submit" disabled={pending}>
           {pending ? "Saving…" : "Save delivery fee"}

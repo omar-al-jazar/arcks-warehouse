@@ -126,7 +126,86 @@
   --daylight-line: #27465f;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body), Inter, sans-serif;
+  font-family: var(--font-body), "IBM Plex Sans Arabic", sans-serif;
+}
+
+.rent .font-heading {
+  font-family: var(--font-display), var(--font-body), sans-serif;
+}
+
+.rent[data-locale="ar"] .font-heading {
+  font-family: var(--font-body), "IBM Plex Sans Arabic", sans-serif;
+}
+
+/* Full-bleed hero on /rent — tungsten wash + daylight rim, three staged motions. */
+.rent-hero {
+  background:
+    radial-gradient(ellipse 70% 55% at 70% 20%, color-mix(in oklab, var(--daylight) 22%, transparent), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 15% 80%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 65%),
+    linear-gradient(165deg, #121214 0%, #0a0a0b 55%, #0d1218 100%);
+}
+
+.rent-hero-glow {
+  background:
+    linear-gradient(105deg, transparent 40%, color-mix(in oklab, var(--primary) 8%, transparent) 58%, transparent 72%);
+  animation: rent-hero-pan 14s ease-in-out infinite alternate;
+}
+
+.rent-hero-grain {
+  opacity: 0.35;
+  background-image:
+    repeating-linear-gradient(
+      -12deg,
+      transparent 0 11px,
+      color-mix(in oklab, var(--foreground) 4%, transparent) 11px 12px
+    );
+  mask-image: linear-gradient(to bottom, black 40%, transparent 95%);
+}
+
+.rent-hero-brand {
+  animation: rent-hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.rent-hero-title {
+  animation: rent-hero-rise 1s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+
+.rent-hero-support {
+  animation: rent-hero-rise 1s cubic-bezier(0.22, 1, 0.36, 1) 0.24s both;
+}
+
+.rent-hero-cta {
+  animation: rent-hero-rise 1.05s cubic-bezier(0.22, 1, 0.36, 1) 0.36s both;
+}
+
+@keyframes rent-hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rent-hero-pan {
+  from {
+    transform: translate3d(-2%, 0, 0) scale(1.02);
+  }
+  to {
+    transform: translate3d(2%, -1%, 0) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rent-hero-glow,
+  .rent-hero-brand,
+  .rent-hero-title,
+  .rent-hero-support,
+  .rent-hero-cta {
+    animation: none;
+  }
 }
 
 @layer base {

@@ -34,14 +34,64 @@ export async function getPublicGear(barcode: string): Promise<PublicGear | null>
 }
 
 /**
- * The Riyadh delivery fee, or null until the owner sets one. RLS lets only
- * signed-in staff read rental_settings, so visitors get it through the service role.
+ * The house-wide Riyadh delivery fee, or null until the owner sets one.
+ * Prefer per-zone fees from `listPublicDeliveryZones` when the customer picks a zone.
  */
 export async function getPublicDeliveryFee(): Promise<number | null> {
   const admin = createAdminClient();
   const { data, error } = await admin.from("rental_settings").select("delivery_fee_sar").eq("id", true).maybeSingle();
   if (error) throw error;
   return toSar(data?.delivery_fee_sar);
+}
+
+export type PublicDeliveryZone = {
+  id: number;
+  slug: string;
+  nameEn: string;
+  nameAr: string;
+  feeSar: number | null;
+};
+
+/** Active Riyadh zones for the public kit form. Service role — no anon policy. */
+export async function listPublicDeliveryZones(): Promise<PublicDeliveryZone[]> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("delivery_zones")
+    .select("id, slug, name_en, name_ar, fee_sar")
+    .eq("active", true)
+    .order("sort_order");
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    nameEn: row.name_en,
+    nameAr: row.name_ar,
+    feeSar: toSar(row.fee_sar),
+  }));
+}
+
+/** Resolve the fee for a zone, falling back to the house fee when the zone fee is unset. */
+export async function resolveDeliveryFee(zoneSlug: string | null | undefined): Promise<{
+  zoneId: number | null;
+  feeSar: number | null;
+}> {
+  if (!zoneSlug) {
+    return { zoneId: null, feeSar: await getPublicDeliveryFee() };
+  }
+  const admin = createAdminClient();
+  const [{ data: zone, error: zoneError }, fallback] = await Promise.all([
+    admin
+      .from("delivery_zones")
+      .select("id, fee_sar")
+      .eq("slug", zoneSlug)
+      .eq("active", true)
+      .maybeSingle(),
+    getPublicDeliveryFee(),
+  ]);
+  if (zoneError) throw zoneError;
+  if (!zone) return { zoneId: null, feeSar: fallback };
+  const zoneFee = toSar(zone.fee_sar);
+  return { zoneId: zone.id, feeSar: zoneFee ?? fallback };
 }
 
 /**

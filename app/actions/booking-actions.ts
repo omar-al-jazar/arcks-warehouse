@@ -6,7 +6,13 @@ import { dbErrorMessage } from "@/lib/supabase/errors";
 import { authorize } from "@/lib/auth/session";
 import { OWNER_ONLY } from "@/lib/auth/roles";
 import { parseForm, parseInput } from "@/lib/validation";
-import { bookingDecisionSchema, businessWhatsappSchema, deliveryFeeSchema } from "@/lib/schemas/bookings";
+import {
+  bookingDecisionSchema,
+  businessWhatsappSchema,
+  deliveryFeeSchema,
+  deliveryZonesSchema,
+} from "@/lib/schemas/bookings";
+import { optionalSar } from "@/lib/schemas/common";
 import type { BookingStatus } from "@/lib/supabase/types";
 
 export type BookingActionState = {
@@ -85,6 +91,40 @@ export async function setDeliveryFee(_prev: BookingActionState, formData: FormDa
   if (data.length === 0) return { error: "Couldn't save the delivery fee. Try again." };
 
   revalidatePath("/owner/settings");
+  return { success: true };
+}
+
+export async function setDeliveryZones(
+  _prev: BookingActionState,
+  formData: FormData
+): Promise<BookingActionState> {
+  if (!(await authorize(OWNER_ONLY))) {
+    return { error: "Only the owner can set delivery zones." };
+  }
+
+  const slugsParsed = parseForm(deliveryZonesSchema, formData);
+  if (!slugsParsed.ok) return { error: slugsParsed.error };
+
+  const updates: { slug: string; fee_sar: number | null }[] = [];
+  for (const slug of slugsParsed.data.zones) {
+    const feeParsed = parseInput(optionalSar(`Fee for ${slug}`), formData.get(`fee_${slug}`));
+    if (!feeParsed.ok) return { error: feeParsed.error };
+    updates.push({ slug, fee_sar: feeParsed.data });
+  }
+
+  const supabase = await createClient();
+  for (const row of updates) {
+    const { data, error } = await supabase
+      .from("delivery_zones")
+      .update({ fee_sar: row.fee_sar })
+      .eq("slug", row.slug)
+      .select("id");
+    if (error) return { error: dbErrorMessage(error, "Couldn't save zone fees. Try again.") };
+    if (data.length === 0) return { error: `Unknown zone: ${row.slug}.` };
+  }
+
+  revalidatePath("/owner/settings");
+  revalidatePath("/rent");
   return { success: true };
 }
 
