@@ -107,6 +107,7 @@ export default function KitBooking({
         <form action={action} className="flex flex-col gap-4">
           <input type="hidden" name="barcode" value={barcode} />
           <input type="hidden" name="fulfilment" value={fulfilment} />
+          <input type="hidden" name="locale" value={locale} />
           {fulfilment === "delivery" ? (
             <input type="hidden" name="deliveryZone" value={zoneSlug} />
           ) : null}
@@ -185,7 +186,7 @@ export default function KitBooking({
           <Separator />
           <div className="flex flex-col gap-2 text-sm">
             <PriceRow
-              label={`${money(dayRateSar, "[RATE]")} × ${Math.max(priced.days, 0)}`}
+              label={`${money(dayRateSar, "[RATE]")} × ${copy.daysUnit(Math.max(priced.days, 0))}`}
               value={money(priced.subtotal, "[SUBTOTAL]")}
             />
             <PriceRow

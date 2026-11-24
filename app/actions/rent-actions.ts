@@ -11,6 +11,12 @@ import {
   resolveDeliveryFee,
 } from "@/lib/rent/catalog";
 import { addDays, HOLD_HOURS, quote, rentalDays, riyadhToday } from "@/lib/rent/dates";
+import {
+  isRentLocale,
+  localizeReserveFormError,
+  reserveErrors,
+  type RentLocale,
+} from "@/lib/rent/i18n";
 import { allowIp, allowPhone, clientIp } from "@/lib/rent/rate-limit";
 import { confirmationText, whatsappLink } from "@/lib/rent/whatsapp";
 
@@ -21,26 +27,29 @@ export type ReserveState = {
 };
 
 export async function reserveGear(_prev: ReserveState, formData: FormData): Promise<ReserveState> {
+  const localeRaw = formData.get("locale");
+  const localeHint: RentLocale =
+    typeof localeRaw === "string" && isRentLocale(localeRaw) ? localeRaw : "ar";
+
   const parsed = parseForm(reserveSchema, formData);
-  if (!parsed.ok) return { error: parsed.error };
+  if (!parsed.ok) return { error: localizeReserveFormError(parsed.error, localeHint) };
+
+  const locale: RentLocale = isRentLocale(parsed.data.locale) ? parsed.data.locale : "ar";
+  const err = reserveErrors[locale];
 
   const ip = await clientIp();
-  if (!allowIp(ip)) {
-    return { error: "Too many reserves from this network. Wait a few minutes and try again." };
-  }
-  if (!(await allowPhone(parsed.data.phone))) {
-    return { error: "Too many reserves with this phone. Wait a few minutes and try again." };
-  }
+  if (!allowIp(ip)) return { error: err.rateIp };
+  if (!(await allowPhone(parsed.data.phone))) return { error: err.ratePhone };
 
   const gear = await getPublicGear(parsed.data.barcode);
-  if (!gear) return { error: "That piece is no longer listed." };
-  if (gear.status === "maintenance") return { error: "This piece is in maintenance." };
+  if (!gear) return { error: err.missing };
+  if (gear.status === "maintenance") return { error: err.maintenance };
 
   const today = riyadhToday();
-  if (parsed.data.start < today) return { error: "Pickup can't be in the past." };
+  if (parsed.data.start < today) return { error: err.past };
 
   const days = rentalDays(parsed.data.start, parsed.data.end);
-  if (days < 1) return { error: "Return must be after pickup." };
+  if (days < 1) return { error: err.returnAfter };
 
   const [{ days: strip }, businessWhatsapp, delivery] = await Promise.all([
     availabilityFor(gear),
@@ -52,10 +61,10 @@ export async function reserveGear(_prev: ReserveState, formData: FormData): Prom
   const wanted = Array.from({ length: days }, (_, index) => addDays(parsed.data.start, index));
   const outside = wanted.some((day) => !strip.some((entry) => entry.date === day));
   const blocked = wanted.some((day) => strip.find((entry) => entry.date === day)?.booked);
-  if (outside || blocked) return { error: "Those dates are already taken." };
+  if (outside || blocked) return { error: err.taken };
 
   if (parsed.data.fulfilment === "delivery" && delivery.zoneId == null) {
-    return { error: "Choose a delivery zone." };
+    return { error: err.zone };
   }
 
   // Price from the stored day rate and zone fee only. Never accept an amount from the form.
@@ -86,23 +95,25 @@ export async function reserveGear(_prev: ReserveState, formData: FormData): Prom
     vat_sar: priced.vat,
     total_sar: priced.total,
   });
+
   if (error) {
-    if (error.code === "23P01") return { error: "Those dates were just reserved." };
+    if (error.code === "23P01") return { error: err.race };
     console.error("[rent]", error);
-    return { error: "The hold didn't save. Try those dates again." };
+    return { error: err.save };
   }
 
   revalidatePath(`/rent/${gear.barcode}`);
   revalidatePath("/owner/bookings");
-  // Email is not wired. Nothing here sends mail or pretends a message was delivered.
-  // Destination is rental_settings.business_whatsapp only — never the customer phone.
-  const text = confirmationText({
-    customerName: parsed.data.name,
-    gearName: gear.name,
-    barcode: gear.barcode,
-    start: parsed.data.start,
-    end: parsed.data.end,
-  });
+  const text = confirmationText(
+    {
+      customerName: parsed.data.name,
+      gearName: gear.name,
+      barcode: gear.barcode,
+      start: parsed.data.start,
+      end: parsed.data.end,
+    },
+    locale
+  );
   return {
     heldUntil: heldUntil.toISOString(),
     whatsappUrl: businessWhatsapp ? whatsappLink(businessWhatsapp, text) : undefined,

@@ -1,18 +1,29 @@
-import { IBM_Plex_Sans_Arabic, Space_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
 import RentNav from "@/components/rent/rent-nav";
 import { rentCopy } from "@/lib/rent/i18n";
 import { getRentLocale } from "@/lib/rent/locale";
 
-const display = Space_Grotesk({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["500", "700"],
+/** Self-hosted Thmanyah — no Google Fonts fetch at Docker build time. */
+const thmanyahSans = localFont({
+  src: [
+    { path: "../../public/fonts/thmanyah/thmanyahsans-Regular.woff2", weight: "400" },
+    { path: "../../public/fonts/thmanyah/thmanyahsans-Medium.woff2", weight: "500" },
+    { path: "../../public/fonts/thmanyah/thmanyahsans-Bold.woff2", weight: "700" },
+    { path: "../../public/fonts/thmanyah/thmanyahsans-Black.woff2", weight: "900" },
+  ],
+  variable: "--font-body",
+  display: "swap",
 });
 
-const arabic = IBM_Plex_Sans_Arabic({
-  variable: "--font-body",
-  subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700"],
+const thmanyahDisplay = localFont({
+  src: [
+    { path: "../../public/fonts/thmanyah/thmanyahserifdisplay-Regular.woff2", weight: "400" },
+    { path: "../../public/fonts/thmanyah/thmanyahserifdisplay-Medium.woff2", weight: "500" },
+    { path: "../../public/fonts/thmanyah/thmanyahserifdisplay-Bold.woff2", weight: "700" },
+    { path: "../../public/fonts/thmanyah/thmanyahserifdisplay-Black.woff2", weight: "900" },
+  ],
+  variable: "--font-display",
+  display: "swap",
 });
 
 export default async function RentLayout({ children }: LayoutProps<"/rent">) {
@@ -22,7 +33,7 @@ export default async function RentLayout({ children }: LayoutProps<"/rent">) {
 
   return (
     <div
-      className={`rent ${display.variable} ${arabic.variable} min-h-screen`}
+      className={`rent ${thmanyahSans.variable} ${thmanyahDisplay.variable} min-h-screen`}
       lang={locale}
       dir={dir}
       data-locale={locale}

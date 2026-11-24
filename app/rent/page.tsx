@@ -8,7 +8,10 @@ import type { EquipmentCategory } from "@/lib/supabase/types";
 
 const ORDER: EquipmentCategory[] = ["camera", "lighting", "grip"];
 
-export const metadata = { title: "Gear — [YOUR BRAND]" };
+export async function generateMetadata() {
+  const locale = await getRentLocale();
+  return { title: rentCopy(locale).metaTitle };
+}
 
 export default async function RentIndexPage() {
   // Without this the page is prerendered at build time, and the gear list and statuses never change.

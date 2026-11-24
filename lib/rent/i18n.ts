@@ -48,7 +48,16 @@ export type RentCopy = {
   reserving: string;
   holdHint: string;
   rangeTaken: string;
+  daysUnit: (n: number) => string;
+  kitPhotoPlaceholder: string;
+  metaTitle: string;
+  metaKitTitle: (name: string) => string;
 };
+
+const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+function toArDigits(n: number | string) {
+  return String(n).replace(/[0-9]/g, (d) => AR_DIGITS[Number(d)] ?? d);
+}
 
 const en: RentCopy = {
   brandPlaceholder: "[YOUR BRAND]",
@@ -96,6 +105,10 @@ const en: RentCopy = {
   reserving: "Reserving…",
   holdHint: "Holds the gear for 24h. No card charged yet. We confirm on WhatsApp, then you pay.",
   rangeTaken: "That range includes a booked day.",
+  daysUnit: (n) => (n === 1 ? "1 day" : `${n} days`),
+  kitPhotoPlaceholder: "[ KIT PHOTO ]",
+  metaTitle: "Gear — [YOUR BRAND]",
+  metaKitTitle: (name) => `${name} — reserve`,
 };
 
 const ar: RentCopy = {
@@ -105,46 +118,98 @@ const ar: RentCopy = {
   localeSwitchTo: "English",
   heroBrand: "[YOUR BRAND]",
   heroHeadline: "معدات تصوير محجوزة لتصويرك.",
-  heroSupport: "اختر عدة، حدد التواريخ في الرياض، واحجزها لمدة ٢٤ ساعة.",
+  heroSupport: "اختر عدة، حدد التواريخ بالرياض، واحجزها ٢٤ ساعة.",
   heroCta: "تصفح المعدات",
   gearHeading: "المعدات",
-  gearSupport: "كل قطعة في المستودع. افتح واحدة لترى السعر والتواريخ واحجزها.",
-  gearEmpty: "لا توجد معدات مدرجة بعد.",
+  gearSupport: "كل قطعة بالمستودع. افتح واحدة تشوف السعر والتواريخ وتحجزها. أسماء المعدات بالإنجليزي كما هي بالمستودع.",
+  gearEmpty: "ما فيه معدات مدرجة الحين.",
   category: { camera: "كاميرات", lighting: "إضاءة", grip: "قبضة ومساند" },
-  statusAvailable: "في المستودع",
+  statusAvailable: "بالمستودع",
   statusOut: "خارج",
   statusMaintenance: "صيانة",
   breadcrumbHome: "الرئيسية",
-  freeDays: (free, total) => `${free} من ${total} أيام متاحة`,
-  kitFallbackDescription: "توصيل إلى موقعك في الرياض، أو استلام من الورشة.",
-  next14: "الـ ١٤ يوماً القادمة",
-  next14Hint: "من المستودع. اليوم المحجوز لا يُحجز مرتين.",
+  freeDays: (free, total) => `${toArDigits(free)} من ${toArDigits(total)} أيام متاحة`,
+  kitFallbackDescription: "توصيل لموقعك بالرياض، أو استلام من الورشة.",
+  next14: "الـ ١٤ يوم الجاية",
+  next14Hint: "من المستودع. اليوم المحجوز ما ينحجز مرتين.",
   booked: "محجوز",
   free: "متاح",
-  whatArrives: "ماذا يصل",
+  whatArrives: "وش يوصل",
   perDay: "/ يوم",
-  heldUntil: (label) => `محجوز حتى ${label}. نؤكد عبر واتساب. لا خصم من البطاقة بعد.`,
+  heldUntil: (label) => `محجوز إلى ${label}. نأكد على واتساب. ما في خصم من البطاقة بعد.`,
   openWhatsapp: "افتح تأكيد واتساب",
-  openWhatsappHint: "يفتح محادثة واتساب مع بيت التأجير، مع الحجز جاهزاً للإرسال.",
+  openWhatsappHint: "يفتح محادثة واتساب مع بيت التأجير، والحجز جاهز للإرسال.",
   pickup: "الاستلام",
   return: "الإرجاع",
   howYouGetIt: "طريقة الاستلام",
-  deliverInRiyadh: "توصيل في الرياض",
+  deliverInRiyadh: "توصيل بالرياض",
   collect: "استلام ذاتي",
   deliveryZone: "منطقة التوصيل",
   chooseZone: "اختر المنطقة",
-  feeDelivery: "توصيل واستلام في الرياض",
+  feeDelivery: "توصيل واستلام بالرياض",
   feeCollect: "استلام من الورشة",
   vat: "ضريبة ١٥٪",
   total: "الإجمالي",
   name: "الاسم",
   phone: "واتساب",
   phonePlaceholder: "05xxxxxxxx",
-  reserve: "احجز هذه التواريخ",
+  reserve: "احجز هالتواريخ",
   reserving: "جارٍ الحجز…",
-  holdHint: "يحجز المعدات ٢٤ ساعة. لا خصم من البطاقة بعد. نؤكد عبر واتساب ثم تدفع.",
-  rangeTaken: "هذا المدى يشمل يوماً محجوزاً.",
+  holdHint: "يحجز المعدات ٢٤ ساعة. ما في خصم من البطاقة بعد. نأكد على واتساب بعدين تدفع.",
+  rangeTaken: "هالمدى فيه يوم محجوز.",
+  daysUnit: (n) => `${toArDigits(n)} ${n === 1 ? "يوم" : "أيام"}`,
+  kitPhotoPlaceholder: "[ صورة العدة ]",
+  metaTitle: "المعدات — [YOUR BRAND]",
+  metaKitTitle: (name) => `${name} — احجز`,
 };
+
+export const reserveErrors = {
+  en: {
+    rateIp: "Too many reserves from this network. Wait a few minutes and try again.",
+    ratePhone: "Too many reserves with this phone. Wait a few minutes and try again.",
+    missing: "That piece is no longer listed.",
+    maintenance: "This piece is in maintenance.",
+    past: "Pickup can't be in the past.",
+    returnAfter: "Return must be after pickup.",
+    taken: "Those dates are already taken.",
+    zone: "Choose a delivery zone.",
+    race: "Those dates were just reserved.",
+    save: "The hold didn't save. Try those dates again.",
+    invalid: "Check the form and try again.",
+  },
+  ar: {
+    rateIp: "طلبات كثيرة من هالشبكة. انتظر شوي وجرب مرة ثانية.",
+    ratePhone: "طلبات كثيرة بهالرقم. انتظر شوي وجرب مرة ثانية.",
+    missing: "هالقطعة مو مدرجة الحين.",
+    maintenance: "هالقطعة بالصيانة.",
+    past: "الاستلام ما يقدر يكون بالماضي.",
+    returnAfter: "الإرجاع لازم بعد الاستلام.",
+    taken: "هالتواريخ محجوزة.",
+    zone: "اختر منطقة التوصيل.",
+    race: "هالتواريخ انحجزت الحين.",
+    save: "الحجز ما انحفظ. جرب التواريخ مرة ثانية.",
+    invalid: "تحقق من الحقول وجرب مرة ثانية.",
+  },
+} as const;
+
+/** Map English zod messages from reserveSchema into the active locale. */
+const RESERVE_FORM_EN_TO_KEY: Record<string, keyof (typeof reserveErrors)["en"]> = {
+  "Choose a piece of gear.": "missing",
+  "Choose a pickup date.": "invalid",
+  "Choose a return date.": "invalid",
+  "Choose delivery or collection.": "invalid",
+  "Enter your name.": "invalid",
+  "Name is too long.": "invalid",
+  "Enter a WhatsApp number.": "invalid",
+  "Return must be after pickup.": "returnAfter",
+  "Choose a delivery zone.": "zone",
+};
+
+export function localizeReserveFormError(message: string, locale: RentLocale): string {
+  const key = RESERVE_FORM_EN_TO_KEY[message];
+  if (key) return reserveErrors[locale][key];
+  return locale === "ar" ? reserveErrors.ar.invalid : message;
+}
 
 const COPY: Record<RentLocale, RentCopy> = { en, ar };
 

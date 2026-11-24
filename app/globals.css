@@ -126,15 +126,15 @@
   --daylight-line: #27465f;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body), "IBM Plex Sans Arabic", sans-serif;
+  font-family: var(--font-body), "Thmanyah Sans", sans-serif;
 }
 
 .rent .font-heading {
-  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-family: var(--font-display), var(--font-body), "Thmanyah Serif Display", sans-serif;
 }
 
 .rent[data-locale="ar"] .font-heading {
-  font-family: var(--font-body), "IBM Plex Sans Arabic", sans-serif;
+  font-family: var(--font-display), var(--font-body), "Thmanyah Serif Display", sans-serif;
 }
 
 /* Full-bleed hero on /rent — tungsten wash + daylight rim, three staged motions. */
