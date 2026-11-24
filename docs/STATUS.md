@@ -2,39 +2,46 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 24 Nov 2026, 4:10 AM Riyadh time, by Cursor Cloud.
+Last updated 24 Nov 2026, 4:18 AM Riyadh time, by Cursor.
 
-## Now: Finish on Omar’s local Cursor (Tailscale)
+## Now: Security build live on Barakat
 
-Cloud cannot SSH to Barakat. **Next work runs on Omar’s machine** with Tailscale — see `docs/LOCAL-HANDOFF.md`.
+Phase 2 and security hardening are live @ `d559aef` (`.deployed-from-sha`; folder is not a git repo).
 
 | Area | Status |
 |---|---|
-| Phase 1–2 product (kits, zones, Arabic, hero) | Live on Barakat @ `689b761` |
-| Security hardening (#25) | On `main` @ `d559aef` — **redeploy pending** |
+| Phase 1–2 product (kits, zones, Arabic, hero) | Live |
+| Security hardening (#25) | Live @ `d559aef` — headers, robots, open-redirect checks confirmed |
 | Official domain / HTTPS | Planned; not started |
 | Business WhatsApp | Unset |
 | Owner email on hold | Not built |
 
 ## Open work
 
-1. Local agent: redeploy `d559aef`+ to Barakat and verify headers + kit HTTP 200.
-2. Owner alert / email on new hold.
-3. Domain → DNS → HTTPS (`docs/HOSTING-BACKEND-PLAN.md`).
+None waiting on a redeploy. Barakat idle.
+
+## Next up, in order
+
+1. Owner alert / email on new hold.
+2. Domain → DNS → HTTPS (`docs/HOSTING-BACKEND-PLAN.md`).
+3. Production gaps from the PCA-style review: durable rate limits, reserve idempotency, decimal money, audit trail, CI.
 
 ## Waiting on the user
 
-- Open this repo in **Cursor Desktop on a Tailscale machine** and paste the prompt in `docs/LOCAL-HANDOFF.md`.
 - Domain choice / brand string / WhatsApp number when ready.
+- Say which next item to build.
 
 ## Known problems
 
-- Cloud agents cannot reach Tailscale; do not rely on Barakat Claude paste if local SSH works.
-- IP / login rate limits are in-process per container.
+- Login limiter is an in-process map keyed on `X-Forwarded-For` or `X-Real-IP` (8 failures / 15 min). Staff reach the app via `tailscale serve :8444` → `127.0.0.1:3001`. If that proxy does not pass a per-client IP, every staff login shares one bucket: 8 wrong PINs lock out all staff for 15 minutes. Not tested (testing triggers the lockout). Clear instantly: `ssh barakat 'cd ~/arcks-warehouse-shadcn && docker compose restart app'`. Same shape applies to the public reserve IP cap.
 - CSP still allows `'unsafe-inline'` / `'unsafe-eval'` until nonces.
+- Docker build can fail once on a transient Google Fonts fetch (`@vercel/turbopack-next` font loader); a retry succeeded. Cache or self-host the font if CI hits it.
+- Barakat deploy folder is not a git checkout.
 
 ## Log
 
 - 24 Nov, 4:00 AM Riyadh: Kits live @ `689b761`.
 - 24 Nov, 4:05 AM: Security #25 merged (`d559aef`).
-- 24 Nov, 4:10 AM: Hand off to local Cursor + Tailscale (`docs/LOCAL-HANDOFF.md`).
+- 24 Nov, 4:10 AM: Hand off to local Cursor + Tailscale.
+- 24 Nov, 4:18 AM Riyadh: Security redeploy confirmed. `/` `/login` `/rent` kits `/robots.txt` 200; owner/manager 307 → `/login?next=…`; CSP, nosniff, DENY, referrer, permissions-policy present; `X-Powered-By` absent; open redirects dropped; DB unchanged (5 zones, 140 equipment); 0 app errors. First image build failed on Google Fonts, retry succeeded.
+- 24 Nov, 4:18 AM Riyadh: Login limiter risk recorded (shared bucket behind tailscale serve if no per-client IP). Restart `app` clears it. Not tested.

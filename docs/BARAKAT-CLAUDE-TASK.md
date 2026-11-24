@@ -2,14 +2,13 @@
 
 **Prefer local Cursor + SSH** (`docs/LOCAL-HANDOFF.md`). Use this paste only if Omar is not on a Tailscale machine.
 
-## Pending (if still needed)
+## Current status (24 Nov 2026, 4:18 AM Riyadh)
 
-Redeploy security build from `main` (`d559aef` or newer). App only; no DB.
+**Idle.** Security redeploy succeeded.
 
-```
-Omar: security hardening is on main. Redeploy app only.
+- Deployed `main` @ `d559aef` (`.deployed-from-sha`).
+- `/` `/login` `/rent` kit pages `/robots.txt` → 200; unknown barcode → 404; owner/manager → 307 login.
+- Security headers present (`X-Frame-Options: DENY`, `nosniff`, CSP). Open redirects dropped.
+- DB unchanged: 5 zones, 140 equipment.
 
-Sync main → bash scripts/barakat-redeploy-app.sh
-
-Confirm /rent + /rent/CAM-0005 + /login = 200, owner 307 logged out, X-Frame-Options DENY. Paste sha back.
-```
+No new task until Cursor updates this file.
