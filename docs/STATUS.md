@@ -2,7 +2,7 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 24 Nov 2026, 3:25 AM Riyadh time, by Cursor.
+Last updated 24 Nov 2026, 3:35 AM Riyadh time, by Cursor.
 
 ## Now: Phase 2 surface — zones, Arabic, hero
 
@@ -28,7 +28,7 @@ PR for zones + Arabic + hero + hosting plan. After merge: Barakat apply `0013` t
 
 1. Apply **0013** on Barakat + redeploy (see `docs/BARAKAT-CLAUDE-TASK.md`).
 2. Owner alert / email on new hold.
-3. Execute 0–3 month hosting plan (`docs/HOSTING-BACKEND-PLAN.md`): backups, git deploy hygiene, health alerts.
+3. Execute 0–3 month hosting plan (`docs/HOSTING-BACKEND-PLAN.md`): **buy domain → HTTPS official `/rent` site**, then backups / deploy hygiene / alerts.
 
 ## Waiting on the user
 
@@ -50,3 +50,4 @@ PR for zones + Arabic + hero + hosting plan. After merge: Barakat apply `0013` t
 - 24 Nov: PRs #2–#16 merged. Tracker shots + competitive rates. Barakat apply + redeploy @ `e9975b5`.
 - 24 Nov, 3:15 AM Riyadh: Redeploy confirmed (`/rent` 200).
 - 24 Nov, 3:25 AM Riyadh: Built per-zone delivery (0013), Arabic `/rent`, animated hero, hosting/backend plan 0–3 and 3–5 months.
+- 24 Nov, 3:35 AM Riyadh: Revised hosting plan — domain + official public website are now the first 0–3 month work (not a late TLS footnote).
