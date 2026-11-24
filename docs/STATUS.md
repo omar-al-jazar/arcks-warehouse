@@ -2,7 +2,7 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 24 Nov 2026, 2:52 AM Riyadh time, by Cursor.
+Last updated 24 Nov 2026, 3:15 AM Riyadh time, by Cursor.
 
 ## Now: Phase 1, one bookable kit
 
@@ -10,27 +10,26 @@ A customer finds a kit, picks dates, sees the full price, and reserves it with a
 
 | # | Step | Status | Where it stands |
 |---|---|---|---|
-| 1 | Kit page: photo, day rate, dates, live availability | Done | `/rent/[barcode]`. Availability uses `stockBlocks`. Live DB: all 140 pieces have `day_rate_sar` (min 40, max 3800, avg 364). |
+| 1 | Kit page: photo, day rate, dates, live availability | Done | Live `/rent` + `/rent/CAM-0005` HTTP 200 after redeploy. Availability uses `stockBlocks`. All 140 pieces have `day_rate_sar` (min 40, max 3800, avg 364). |
 | 2 | "What arrives" list | Done | `kit_contents` column live; public page lists contents when set. |
 | 3 | Price: days × day rate + delivery + 15% VAT | Done | Quote columns on `bookings`. Delivery fee still unset. |
 | 4 | Reserve holds the gear for 24 hours | Done | `bookings` table + overlap constraint live. Rate-limit (#11). Expired labels (#12). |
 | 5 | WhatsApp and email confirmation | Partly built | Button opens Settings number (#10). `business_whatsapp` still unset. |
-| 6 | Owner's stock calendar | Done | Owner → Calendar / Bookings. |
+| 6 | Owner's stock calendar | Done | Owner → Calendar / Bookings (307 → login when unauthed). |
 | 7 | Riyadh delivery with a real fee | Done | `rental_settings` row exists; `delivery_fee_sar` unset (skipped). |
 
 ## Open work
 
-None waiting on review. Live schema **0007–0012** applied. Redeploy script on `main` via [#18](https://github.com/omar-al-jazar/arcks-warehouse/pull/18). Waiting on Barakat Claude to run it.
+None. Live schema **0007–0012** applied. App redeployed on Barakat from `main` @ `e9975b5` (recorded in `.deployed-from-sha`; folder is not a git repo).
 
 ## Next up, in order
 
-1. Confirm Barakat app redeploy (Before/After HTTP + HEAD sha).
-2. Owner alert / email on new hold (deferred).
+1. Owner alert / email on new hold (deferred).
+2. Set delivery fee / business WhatsApp when Omar wants those paths live.
 3. Per-zone delivery, Arabic UI, animated hero — deferred on purpose.
 
 ## Waiting on the user
 
-- Paste the block below into the **barakat** Claude Code session (also in `docs/BARAKAT-CLAUDE-TASK.md`).
 - Send the business name and the first bookable kit when ready.
 - Set delivery fee / business WhatsApp later if you want those paths live.
 
@@ -39,7 +38,7 @@ None waiting on review. Live schema **0007–0012** applied. Redeploy script on 
 - Build should pass without a database after PR #5.
 - IP rate-limit is in-process only.
 - Tracker canvas cannot load remote images; use repo `docs/tracker-shots/` or chat artifacts.
-- Barakat app HTTP 200 but may still be Sep 16 code until redeploy.
+- Barakat deploy folder is not a git checkout; sha lives in `.deployed-from-sha`.
 
 ## Log
 
@@ -49,3 +48,4 @@ None waiting on review. Live schema **0007–0012** applied. Redeploy script on 
 
 - 24 Nov, ~2:48 AM Riyadh: Omar approved app redeploy from main; script + Barakat Claude task updated.
 - 24 Nov, 2:52 AM Riyadh: Merged #18 (redeploy script). Paste for Barakat Claude ready.
+- 24 Nov, 3:15 AM Riyadh: Barakat redeploy **confirmed**. Before: `/rent` and `/rent/CAM-0005` 404. After: both 200; `/rent/NOPE-0000` 404; owner routes 307→login; DB untouched (140 rows, fee/WhatsApp empty); 12 other containers kept; main @ `e9975b5`.
