@@ -1,6 +1,6 @@
 export const RIYADH = "Asia/Riyadh";
 export const VAT_RATE = 0.15;
-export const HOLD_HOURS = 24;
+export const HOLD_MINUTES = 10;
 export const STRIP_DAYS = 14;
 
 export type Fulfilment = "delivery" | "collect";

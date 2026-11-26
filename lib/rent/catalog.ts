@@ -172,6 +172,32 @@ function toPublicGear(row: {
   };
 }
 
+/** One card per name. A photo and a free unit win. Highest day rate leads. */
+export function presentPublicGear(items: PublicGear[]) {
+  const grouped = new Map<string, { item: PublicGear; count: number }>();
+  for (const item of items) {
+    const key = item.name.trim().toLowerCase();
+    const existing = grouped.get(key);
+    if (!existing) {
+      grouped.set(key, { item, count: 1 });
+      continue;
+    }
+    existing.count += 1;
+    if (existing.item.status !== "available" && item.status === "available") existing.item = item;
+    else if (!existing.item.imageUrl && item.imageUrl) existing.item = item;
+  }
+  return [...grouped.values()].sort((a, b) => {
+    const rate = (b.item.dayRateSar ?? 0) - (a.item.dayRateSar ?? 0);
+    if (rate !== 0) return rate;
+    // A named kit beats a single piece when the day rate is the same.
+    return kitRank(a.item.name) - kitRank(b.item.name);
+  });
+}
+
+function kitRank(name: string) {
+  return /kit|package|full set/i.test(name) ? 0 : 1;
+}
+
 function toSar(value: number | string | null | undefined) {
   const amount = value == null ? null : Number(value);
   return amount != null && Number.isFinite(amount) ? amount : null;

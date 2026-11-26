@@ -6,6 +6,7 @@ export type RentCopy = {
   brandPlaceholder: string;
   navHelp: string;
   navWhatsapp: string;
+  navAdmin: string;
   localeSwitchTo: string;
   heroBrand: string;
   heroHeadline: string;
@@ -63,13 +64,14 @@ const en: RentCopy = {
   brandPlaceholder: "[YOUR BRAND]",
   navHelp: "Need help?",
   navWhatsapp: "WhatsApp us",
+  navAdmin: "Admin",
   localeSwitchTo: "العربية",
   heroBrand: "[YOUR BRAND]",
   heroHeadline: "Film gear, held for your shoot.",
-  heroSupport: "Pick a kit, choose dates in Riyadh, reserve a 24-hour hold.",
+  heroSupport: "Pick a kit, choose dates in Riyadh, reserve a 10-minute hold.",
   heroCta: "Browse the gear",
   gearHeading: "The gear",
-  gearSupport: "Every piece in the warehouse. Open one to see the price, the dates, and reserve it.",
+  gearSupport: "Open a piece, see the day rate, and hold it for your shoot.",
   gearEmpty: "No gear is listed yet.",
   category: { camera: "Camera", lighting: "Lighting", grip: "Grip" },
   statusAvailable: "In the warehouse",
@@ -103,7 +105,7 @@ const en: RentCopy = {
   phonePlaceholder: "05xxxxxxxx",
   reserve: "Reserve these dates",
   reserving: "Reserving…",
-  holdHint: "Holds the gear for 24h. No card charged yet. We confirm on WhatsApp, then you pay.",
+  holdHint: "Holds the gear for 10 minutes. No card charged yet. We confirm on WhatsApp, then you pay.",
   rangeTaken: "That range includes a booked day.",
   daysUnit: (n) => (n === 1 ? "1 day" : `${n} days`),
   kitPhotoPlaceholder: "[ KIT PHOTO ]",
@@ -115,13 +117,14 @@ const ar: RentCopy = {
   brandPlaceholder: "[YOUR BRAND]",
   navHelp: "تحتاج مساعدة؟",
   navWhatsapp: "راسلنا على واتساب",
+  navAdmin: "الإدارة",
   localeSwitchTo: "English",
   heroBrand: "[YOUR BRAND]",
   heroHeadline: "معدات تصوير محجوزة لتصويرك.",
-  heroSupport: "اختر عدة، حدد التواريخ بالرياض، واحجزها ٢٤ ساعة.",
+  heroSupport: "اختر عدة، حدد التواريخ بالرياض، واحجزها ١٠ دقائق.",
   heroCta: "تصفح المعدات",
   gearHeading: "المعدات",
-  gearSupport: "كل قطعة بالمستودع. افتح واحدة تشوف السعر والتواريخ وتحجزها. أسماء المعدات بالإنجليزي كما هي بالمستودع.",
+  gearSupport: "افتح القطعة، شوف سعر اليوم، واحجزها لتصويرك. أسماء المعدات بالإنجليزي.",
   gearEmpty: "ما فيه معدات مدرجة الحين.",
   category: { camera: "كاميرات", lighting: "إضاءة", grip: "قبضة ومساند" },
   statusAvailable: "بالمستودع",
@@ -155,7 +158,7 @@ const ar: RentCopy = {
   phonePlaceholder: "05xxxxxxxx",
   reserve: "احجز هالتواريخ",
   reserving: "جارٍ الحجز…",
-  holdHint: "يحجز المعدات ٢٤ ساعة. ما في خصم من البطاقة بعد. نأكد على واتساب بعدين تدفع.",
+  holdHint: "يحجز المعدات ١٠ دقائق. ما في خصم من البطاقة بعد. نأكد على واتساب بعدين تدفع.",
   rangeTaken: "هالمدى فيه يوم محجوز.",
   daysUnit: (n) => `${toArDigits(n)} ${n === 1 ? "يوم" : "أيام"}`,
   kitPhotoPlaceholder: "[ صورة العدة ]",

@@ -10,7 +10,7 @@ import {
   getPublicGear,
   resolveDeliveryFee,
 } from "@/lib/rent/catalog";
-import { addDays, HOLD_HOURS, quote, rentalDays, riyadhToday } from "@/lib/rent/dates";
+import { addDays, HOLD_MINUTES, quote, rentalDays, riyadhToday } from "@/lib/rent/dates";
 import {
   isRentLocale,
   localizeReserveFormError,
@@ -79,7 +79,7 @@ export async function reserveGear(_prev: ReserveState, formData: FormData): Prom
     .eq("status", "held")
     .lte("held_until", now.toISOString());
 
-  const heldUntil = new Date(now.getTime() + HOLD_HOURS * 60 * 60 * 1000);
+  const heldUntil = new Date(now.getTime() + HOLD_MINUTES * 60 * 1000);
   const { error } = await admin.from("bookings").insert({
     equipment_id: gear.id,
     start_date: parsed.data.start,
