@@ -1,5 +1,6 @@
 import "server-only";
 import { getExaApiKey } from "@/lib/env";
+import { isProductPhoto } from "@/lib/photo-url";
 
 // Looks up a stock/product photo for an identified piece of equipment, since
 // most gear gets photographed for identification while still in its bag/case
@@ -24,6 +25,6 @@ export async function findStockImage(equipmentName: string): Promise<string | nu
 
   const data = await response.json();
   const results: { image?: string }[] = data.results ?? [];
-  const withImage = results.find((result) => typeof result.image === "string" && result.image.length > 0);
+  const withImage = results.find((result) => isProductPhoto(result.image));
   return withImage?.image ?? null;
 }
