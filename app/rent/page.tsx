@@ -21,7 +21,8 @@ export default async function RentIndexPage() {
   const gear = await listPublicGear();
   const chapters = ORDER.map((category) => {
     const pieces = presentPublicGear(gear.filter((item) => item.category === category));
-    return { category, lead: pieces[0] };
+    // A full-screen chapter needs a picture; fall back to the top piece only if none has one.
+    return { category, lead: pieces.find((piece) => piece.item.imageUrl) ?? pieces[0] };
   }).filter((chapter) => chapter.lead);
 
   return (
