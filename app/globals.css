@@ -198,6 +198,15 @@
   }
 }
 
+html:has(.rent) {
+  scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
+}
+
+.rent-chapter {
+  scroll-snap-align: start;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rent-hero-glow,
   .rent-hero-brand,
@@ -205,6 +214,10 @@
   .rent-hero-support,
   .rent-hero-cta {
     animation: none;
+  }
+
+  html:has(.rent) {
+    scroll-snap-type: none;
   }
 }
 

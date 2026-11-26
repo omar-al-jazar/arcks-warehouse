@@ -6,7 +6,7 @@
 Film-equipment rental and warehouse app for a rental house in Riyadh. One database serves two parts:
 
 - Staff app: `/manager` (checkout, return, add gear) and `/owner` (inventory, orders, bookings, staff, settings).
-- Public rental site: `/rent` (gear list) and `/rent/[barcode]` (kit page with dates, price and a 24-hour hold).
+- Public rental site: `/rent` (gear list) and `/rent/[barcode]` (kit page with dates, price and a 10-minute hold).
 
 Stack: Next.js 16 (App Router, Server Actions), React 19, shadcn/ui on Base UI, Tailwind 4, zod 4, and self-hosted Supabase (Postgres, Auth, Kong, Storage) from `docker-compose.yml`.
 

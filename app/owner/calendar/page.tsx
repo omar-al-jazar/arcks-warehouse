@@ -16,7 +16,7 @@ const STATES: Record<StockState, { label: string; description: string; className
   free: { label: "Free", description: "Free to book", className: "text-muted-foreground" },
   held: {
     label: "Held",
-    description: "24-hour hold",
+    description: "10-minute hold",
     className: "border border-dashed border-primary text-primary",
   },
   confirmed: {
