@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isProductPhoto } from "@/lib/photo-url";
 import { createAdminClient } from "@/lib/supabase/server";
 import type { EquipmentCategory, EquipmentStatus, KitContentItem } from "@/lib/supabase/types";
 import { eachDay, riyadhToday, STRIP_DAYS } from "@/lib/rent/dates";
@@ -165,7 +166,8 @@ function toPublicGear(row: {
     name: row.name,
     category: row.category,
     description: row.description,
-    imageUrl: row.image_url,
+    // Hide old junk stock URLs so the card shows its no-photo state instead.
+    imageUrl: isProductPhoto(row.image_url) ? row.image_url : null,
     status: row.status,
     dayRateSar: toSar(row.day_rate_sar),
     kitContents: toKitContents(row.kit_contents),
