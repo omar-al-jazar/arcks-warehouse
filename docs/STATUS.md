@@ -4,18 +4,18 @@ The handoff between Cursor and Claude Code. Whoever finishes a task updates this
 
 Last updated 26 Nov 2026, 10:05 PM Riyadh time, by Cursor (handoff to Claude).
 
-## Now: NVIDIA-style shop hero is live; GitHub is behind Barakat
+## Now: public shop hero + chapters on GitHub (merge this PR, then `/continue` in Claude)
 
 `https://arcfilmrental.com` serves `/rent` through the Cloudflare tunnel (`arc-rent` → Barakat `127.0.0.1:3001`). Porkbun NS → Cloudflare (`ace` / `haley`).
 
-**Live (rsync on Barakat, not yet committed/pushed):** full-viewport hero (Lighting Equipment lockup PNG, one Arabic headline, CTA smooth-scrolls to `#camera`), then three chapter screens (camera / lighting / grip). Full list at `/rent/gear`. Public logo assets: `public/lighting-*.png` from `Lighting Equipment logo.pdf`. Kit id `130` renamed **Grip package** (description: Stingers, clamps, and flags.). `presentPublicGear` + `kitRank` prefer kit/package leads.
+**This branch:** signed-out `/` → `/rent`; full-viewport hero (Lighting Equipment lockup, one Arabic headline, CTA smooth-scrolls to `#camera`); three chapter screens (camera / lighting / grip); full list at `/rent/gear`; logo PNGs in `public/lighting-*.png`; `presentPublicGear` + `kitRank` prefer kit/package leads. Hold copy/code is 10 minutes.
 
-**Git:** branch `cursor/public-home-is-shop` is 1 commit ahead of `origin/main` (`b965af4` root→`/rent`) **plus uncommitted** hero/chapters/logo/catalog/i18n work. Merged `main` tip is still `34d3935`; older live SHA note was `7719ed7`. Deploy folder on Barakat is **not** a git checkout — always rsync, then `docker compose build app && up -d --no-deps app` (use `--no-cache` if COPY layers look stale).
+**Live DB (Barakat only, not a migration):** kit id `130` = **Grip package** (Stingers, clamps, and flags.). Deploy folder is **not** a git checkout — rsync, then `docker compose build app && up -d --no-deps app` (use `--no-cache` if COPY layers look stale).
 
 | Area | Status |
 |---|---|
-| Phase 1–2 + security + Arabic/Thmanyah | Live (tree on Barakat newer than GitHub) |
-| Shop hero + chapters + logo lockup | Live on domain; **not on GitHub yet** |
+| Phase 1–2 + security + Arabic/Thmanyah | Live |
+| Shop hero + chapters + logo lockup | On this PR; already rsynced live |
 | Grip package rename (id 130) | Live in Barakat Postgres |
 | Brag video | `brag-output/brag.mp4` on `main` |
 | Official domain / HTTPS | `arcfilmrental.com` live via Cloudflare tunnel |
@@ -25,24 +25,23 @@ Last updated 26 Nov 2026, 10:05 PM Riyadh time, by Cursor (handoff to Claude).
 
 ## Open work
 
-1. **Commit + PR** the uncommitted shop work on `cursor/public-home-is-shop` (hero, chapters, `/rent/gear`, logo PNGs, catalog `kitRank`, STATUS) so Claude and GitHub match Barakat.
+1. Merge this PR, then type `/continue` in Claude Code.
 2. Polish chapters / remaining bad equipment photos (DZOFilm `.ico`, Flag 1m SVG logo, Grip package processing.gif if still set, Bounce trampoline, Pipelight diagram, Barkan missing path).
-3. Replace `[YOUR BRAND]` in meta/copy once the public name is final (logo files are already in `public/`).
+3. Replace `[YOUR BRAND]` in meta/copy once the public name is final (logo files are in `public/`).
 4. Owner alert / email on new hold.
 5. PCA gaps: durable rate limits, reserve idempotency, decimal money, audit trail, CI.
 
 ## Next up, in order
 
-1. Land the uncommitted live shop on GitHub (commit → PR → merge), then type `/continue` in Claude Code.
+1. Merge this PR → `/continue` in Claude Code.
 2. Chapter polish + photo cleanup for junk URLs.
 3. Brand string + WhatsApp when Omar supplies them.
 4. Owner email on hold; then PCA hardening.
 
 ## Waiting on the user
 
-- Confirm public brand string (logo PNGs are already in repo uncommitted).
+- Confirm public brand string (logo PNGs are in the repo).
 - WhatsApp business number when ready.
-- Say **commit** (or open Claude after a commit) so the handoff is not “live only on Barakat.”
 
 ## Known problems
 
