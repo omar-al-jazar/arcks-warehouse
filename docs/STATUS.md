@@ -2,7 +2,7 @@
 
 The handoff between Cursor and Claude Code. Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 26 Nov 2026, 10:31 PM Riyadh time, by Claude.
+Last updated 26 Nov 2026, 10:55 PM Riyadh time, by Claude.
 
 ## Now: hide junk stock photos on the public shop (`claude/photo-cleanup`)
 
@@ -16,7 +16,8 @@ Last updated 26 Nov 2026, 10:31 PM Riyadh time, by Claude.
 |---|---|
 | Phase 1–2 + security + Arabic/Thmanyah | Live |
 | Shop hero + chapters + logo lockup | Merged (#32, `d2f640c`); live |
-| Junk photo filter | On `claude/photo-cleanup`; not deployed |
+| Junk photo filter | Merged (#33); live |
+| Chapter leads with a photo | Merged (#34); live |
 | Grip package rename (id 130) | Live in Barakat Postgres |
 | Brag video | `brag-output/brag.mp4` on `main` |
 | Official domain / HTTPS | `arcfilmrental.com` live via Cloudflare tunnel |
@@ -26,16 +27,14 @@ Last updated 26 Nov 2026, 10:31 PM Riyadh time, by Claude.
 
 ## Open work
 
-1. Merge `claude/photo-cleanup`, rsync to Barakat, rebuild app.
-2. Real photos for the 7 pieces with none or a hidden junk one: CAM-0019 DZOFilm Prime Lens, GRP-0005 Grip package, GRP-0018 Flag 1m x 1m, GRP-0031 (trampoline photo: the filter can't catch it, clear it in `/owner`), LGT-0079 Barkan, LGT-0080, LGT-0081. Then chapter polish.
+1. Real photos for the 7 pieces with none or a hidden junk one: CAM-0019 DZOFilm Prime Lens, GRP-0005 Grip package, GRP-0018 Flag 1m x 1m, GRP-0031 (trampoline photo: the filter can't catch it, clear it in `/owner`), LGT-0079 Barkan, LGT-0080, LGT-0081. Then chapter polish.
 3. Replace `[YOUR BRAND]` in meta/copy once the public name is final (logo files are in `public/`).
 4. Owner alert / email on new hold.
 5. PCA gaps: durable rate limits, reserve idempotency, decimal money, audit trail, CI.
 
 ## Next up, in order
 
-1. Merge photo-cleanup PR → deploy.
-2. Upload real photos for the 7 pieces above; chapter polish.
+1. Upload real photos for the 7 pieces above; chapter polish.
 3. Brand string + WhatsApp when Omar supplies them.
 4. Owner email on hold; then PCA hardening.
 
@@ -67,3 +66,5 @@ Last updated 26 Nov 2026, 10:31 PM Riyadh time, by Claude.
 - 26 Nov, 10:05 PM Riyadh: STATUS rewritten for Claude handoff. Uncommitted shop files remain on `cursor/public-home-is-shop`.
 - 26 Nov, 10:05 PM Riyadh: #32 merged (`d2f640c`).
 - 26 Nov, 10:31 PM Riyadh: Shop and stock search now skip `.ico`/`.svg`/`.gif`, logo, icon, diagram and spinner URLs (`lib/photo-url.ts`). Found 7 bad pieces by scanning all 67 live kit pages.
+- 26 Nov, ~10:40 PM Riyadh: #33 deployed (rsync without deletes; app rebuilt). Grip chapter went blank: its lead had only the junk GIF.
+- 26 Nov, 10:55 PM Riyadh: #34 each chapter leads with its top piece that has a photo; deployed.
