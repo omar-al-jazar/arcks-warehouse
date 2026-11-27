@@ -1,8 +1,8 @@
 # ARC hosting & backend plan
 
-Written 24 Nov 2026 (Riyadh); revised same day to put **domain + official public website** first — that was always the product intent; the first draft wrongly treated “hosting” as only hardening the existing LAN/Tailscale stack.
+Written 24 Nov 2026 (Riyadh); revised same day to put **domain + official public website** first. Status marks refreshed 27 Nov 2026.
 
-Assumes live Barakat Mac Pro + Tailscale + Docker Compose self-hosted Supabase (migrations through **0013** on `main`; live apply may still be pending).
+Assumes live Barakat Mac Pro + Tailscale + Docker Compose self-hosted Supabase (migrations through **0013**).
 
 ## Now (baseline)
 
@@ -10,10 +10,11 @@ Assumes live Barakat Mac Pro + Tailscale + Docker Compose self-hosted Supabase (
 |---|---|
 | Next.js app | Docker `app` on Barakat (`:3001`) |
 | Postgres / Auth / Kong / Storage | Same compose stack on Barakat |
-| Public `/rent` + owner desk | Same origin; **domain purchased (hostname TBD — wire DNS + TLS next)** |
-| Ops | Claude Code on Barakat (Tailscale); Cursor Cloud cannot join the tailnet |
+| Public `/rent` + owner desk | Same origin: `https://arcfilmrental.com` (Porkbun NS → Cloudflare → tunnel `arc-rent` → Barakat `127.0.0.1:3001`) |
+| Ops | Claude Code on Omar's laptop over `ssh barakat` (Tailscale). Deploy = rsync (folder is not a git checkout) → `docker compose build app && up -d --no-deps app` |
+| CI | GitHub Actions on every PR and push to `main`: lint, tsc, tests, placeholder build |
 
-Risks today: no official hostname for customers, single machine, no automated offsite Postgres backup, deploy folder may not be a git checkout (sha in `.deployed-from-sha`), IP rate-limit is in-process only.
+Risks today: single machine, no automated offsite Postgres backup, deploy folder is not a git checkout (sha in `.deployed-from-sha`), rate limits are in-process `Map`s that reset on restart.
 
 ---
 
@@ -23,31 +24,30 @@ Goal: customers reach ARC on **your domain over HTTPS**, while Barakat stays rec
 
 ### A. Domain & official website (do this first)
 
-1. **Buy the domain** — **done** (Omar, 24 Nov 2026). Record the exact hostname in `docs/STATUS.md` before DNS.
-2. **DNS**
+1. **Buy the domain** — **done**: `arcfilmrental.com` (24 Nov 2026).
+2. **DNS** — **done** via Cloudflare Tunnel (no public IP exposed). The bullets below were the original options.
    - `A`/`AAAA` (or CNAME) for `www` and apex → the public edge (Barakat’s public IP **only if** you accept exposing it, or a small fronting VPS / Cloudflare proxy).
    - Optional: `rent.` or keep everything on apex/`www` with `/rent` as the booking path (current app).
-3. **TLS**
-   - Terminate HTTPS with Caddy or nginx (Let’s Encrypt) on the edge.
-   - Force HTTPS; HSTS once stable.
+3. **TLS** — **done** at Cloudflare's edge.
+   - **Open:** no `Strict-Transport-Security` header yet (`lib/security/headers.ts`). Add once the host is final.
 4. **What “official website” means in this codebase**
    - The public face is already `/rent` (hero, catalog, kit pages, Arabic).
-   - Replace `[YOUR BRAND]` with the real name once chosen.
-   - Optional thin marketing home at `/` that points into `/rent` — only if you want a brand page separate from the gear list; not required to go live.
+   - **Open:** replace `[YOUR BRAND]` in `lib/rent/i18n.ts` (hero and every public page title, both locales).
+   - **Done:** signed-out `/` redirects to `/rent` (`app/page.tsx`).
 5. **Split public vs staff access**
    - Public: domain → `/rent` (and maybe `/`).
-   - Staff (`/owner`, `/manager`, `/login`): keep on Tailscale hostname **or** the same domain behind auth (already PIN/passkey). Prefer not advertising `/owner` in marketing.
+   - Staff (`/owner`, `/manager`, `/login`): keep on Tailscale hostname **or** the same domain behind auth (already PIN/passkey). Prefer not advertising `/owner` in marketing. **Done:** `app/robots.ts` disallows staff routes.
 6. **Env / Auth follow-through**
-   - Set `WEBAUTHN_RP_ID` / `WEBAUTHN_RP_ORIGINS` (and any public URL envs) to the real domain before passkeys are used from that host.
-   - Confirm cookies/`sameSite` still work on the apex + `www` choice you pick (pick one canonical host and redirect the other).
+   - Set `WEBAUTHN_RP_ID` / `WEBAUTHN_RP_ORIGINS` (wired in `docker-compose.yml` → GoTrue) to the real domain before passkeys are used from that host. **Unverified** on Barakat's `.env`.
+   - Confirm cookies/`sameSite` still work on the apex + `www` choice you pick (pick one canonical host and redirect the other). **Open:** no apex vs `www` decision recorded.
 
 ### B. Harden the machine behind the domain
 
-1. **Backups** — nightly encrypted `pg_dump` offsite; monthly restore drill.
-2. **Deploy hygiene** — live tree is a real `git` checkout of `main` (or rsync from one); only path is pull → migrate → rebuild app.
-3. **Observability** — uptime check on `https://your.domain/rent`; disk/Postgres alerts to Omar.
+1. **Backups** — **open.** Nightly encrypted `pg_dump` offsite; monthly restore drill.
+2. **Deploy hygiene** — **partly.** Today: rsync from a checkout of `main`, then rebuild. `scripts/barakat-redeploy-app.sh` still does `git pull` and fails on the non-git folder; fix the script or make the folder a checkout.
+3. **Observability** — **open.** Uptime check on `https://arcfilmrental.com/rent`; disk/Postgres alerts to Omar.
 4. **Secrets** — `.env` out of offsite dumps; rotate service-role once; never expose service role on the public internet.
-5. **Product backend (small)** — owner alert/email on new hold; durable rate-limit store.
+5. **Product backend (small)** — **open:** owner alert/email on new hold; durable rate-limit store.
 
 Out of scope for 0–3: multi-region, Kubernetes, full managed-Supabase cutover, card capture.
 
@@ -59,12 +59,12 @@ Goal: the **domain stays stable** while the backend behind it can move without a
 
 1. **Edge stays; origin may move**
    - DNS still points at Cloudflare / VPS / Barakat as you choose.
-   - If Barakat should not face the public internet: fronting VPS or Cloudflare Tunnel → private origin on Tailscale.
+   - If Barakat should not face the public internet: fronting VPS or Cloudflare Tunnel → private origin on Tailscale. **Done early:** the Cloudflare Tunnel is live.
 2. **Split read path** if `/rent` load hurts checkout — replica for catalog/availability; holds still write primary.
 3. **Managed Postgres decision** if disk/UPS risk grows — move DB only; app keeps talking over private network.
 4. **Media** — kit photos in Storage + CDN on the same domain or a `cdn.` host.
 5. **Payments** (optional) — after confirm, Moyasar/HyperPay webhook → booking status; hold stays free.
-6. **Arabic inventory** — `name_ar` / bilingual kit contents when you need them on the official site.
+6. **Arabic inventory** — `name_ar` / bilingual kit contents when you need them on the official site. (Today only delivery zones have `name_ar`.)
 
 ---
 
