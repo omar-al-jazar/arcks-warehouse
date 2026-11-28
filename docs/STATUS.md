@@ -2,9 +2,9 @@
 
 The only handoff between Cursor and Claude Code (the old `LOCAL-HANDOFF.md` and `BARAKAT-CLAUDE-TASK.md` are gone). Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 27 Nov 2026, 7:55 PM Riyadh time, by Claude.
+Last updated 27 Nov 2026, 9:10 PM Riyadh time, by Claude.
 
-## Now: idle, docs refreshed (`claude/docs-drift`)
+## Now: idle, 4 of 7 photos fixed (`claude/photos-4`)
 
 `https://arcfilmrental.com` serves `/rent` through the Cloudflare tunnel (`arc-rent` → Barakat `127.0.0.1:3001`). Porkbun NS → Cloudflare (`ace` / `haley`).
 
@@ -20,6 +20,7 @@ Last updated 27 Nov 2026, 7:55 PM Riyadh time, by Claude.
 | Chapter leads with a photo | Merged (#34); live |
 | CI (lint, tsc, tests, build) | Merged (#35, `8ce8f32`); runs on every PR and push to `main` |
 | Grip package rename (id 130) | Live in Barakat Postgres |
+| Photos for LGT-0080, GRP-0018, GRP-0031, CAM-0019 | Live in Barakat Postgres (hotlinked vendor images) |
 | Brag video | `brag-output/brag.mp4` on `main` |
 | Official domain / HTTPS | `arcfilmrental.com` live via Cloudflare tunnel |
 | Meta / copy brand string | `[YOUR BRAND]` is the hero brand and every public page title (`lib/rent/i18n.ts`) |
@@ -28,7 +29,7 @@ Last updated 27 Nov 2026, 7:55 PM Riyadh time, by Claude.
 
 ## Open work
 
-1. Real photos for the 7 pieces with none or a hidden junk one: CAM-0019 DZOFilm Prime Lens, GRP-0005 Grip package, GRP-0018 Flag 1m x 1m, GRP-0031 (trampoline photo: the filter can't catch it, clear it in `/owner`), LGT-0079 Barkan, LGT-0080, LGT-0081. Then chapter polish.
+1. Real photos for the last 3 pieces: GRP-0005 Grip package (own bundle), LGT-0079 Barkan (`/equipment/barkan.jpg` does not exist), LGT-0081 "Pipelight Pank 88" (real product name unclear). CAM-0019 uses a DZOFilm family shot; swap for a photo of the actual kit. Then chapter polish.
 2. Replace `[YOUR BRAND]` in meta/copy once the public name is final (logo files are in `public/`).
 3. Owner alert / email on new hold.
 4. PCA gaps: durable rate limits (both limiters are in-process `Map`s), reserve idempotency, decimal money, audit trail.
@@ -36,7 +37,7 @@ Last updated 27 Nov 2026, 7:55 PM Riyadh time, by Claude.
 
 ## Next up, in order
 
-1. Upload real photos for the 7 pieces above; chapter polish.
+1. Omar's own photos for the 3 pieces above; chapter polish.
 2. Brand string + WhatsApp when Omar supplies them.
 3. Owner email on hold; then PCA and hosting hardening.
 
@@ -51,7 +52,6 @@ Last updated 27 Nov 2026, 7:55 PM Riyadh time, by Claude.
 - CSP still allows `'unsafe-inline'` / `'unsafe-eval'` until nonces.
 - Barakat deploy folder is **not** a git checkout — rsync from a Tailscale machine, then rebuild app. `scripts/barakat-redeploy-app.sh` `git pull` fails until that is fixed.
 - `npm run lint` may still flag an unescaped apostrophe in `components/rent/kit-booking.tsx`.
-- PR #31 (`cursor/domain-arcfilmrental-e030`) is stale: its diff would revert #32. Still open on 27 Nov; close it.
 - Cloud agents cannot reach Barakat Tailscale; deploy/verify from Omar’s laptop (`ssh barakat`).
 - `WEBAUTHN_RP_ID` / `WEBAUTHN_RP_ORIGINS` on Barakat's `.env` not checked against `arcfilmrental.com`.
 
@@ -74,3 +74,4 @@ Last updated 27 Nov 2026, 7:55 PM Riyadh time, by Claude.
 - 26 Nov, 11:10 PM Riyadh: CI added (lint, tsc, `npm test`, placeholder build) on PRs and `main`.
 - 27 Nov, 4:29 PM Riyadh: #35 merged (`8ce8f32`); first CI run green.
 - 27 Nov, 7:55 PM Riyadh: Docs drift check. Removed the stale Cursor/Barakat handoff docs; hosting plan status refreshed.
+- 27 Nov, 9:10 PM Riyadh: PR #31 closed. Live DB photos set for LGT-0080 (Antari), GRP-0018 (Matthews flag), GRP-0031 (bounce board, replaces trampoline), CAM-0019 (DZO family shot). All 4 kit pages show them; image URLs return 200.
