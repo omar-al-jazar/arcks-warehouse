@@ -2,9 +2,9 @@
 
 The only handoff between Cursor and Claude Code (the old `LOCAL-HANDOFF.md` and `BARAKAT-CLAUDE-TASK.md` are gone). Whoever finishes a task updates this file in the same pull request. GitHub is newer than this file: check open pull requests and unmerged branches before trusting it.
 
-Last updated 27 Nov 2026, 9:10 PM Riyadh time, by Claude.
+Last updated 29 Nov 2026, by Claude.
 
-## Now: idle, 4 of 7 photos fixed (`claude/photos-4`)
+## Now: idle, business WhatsApp set (`claude/business-whatsapp`)
 
 `https://arcfilmrental.com` serves `/rent` through the Cloudflare tunnel (`arc-rent` → Barakat `127.0.0.1:3001`). Porkbun NS → Cloudflare (`ace` / `haley`).
 
@@ -24,27 +24,26 @@ Last updated 27 Nov 2026, 9:10 PM Riyadh time, by Claude.
 | Brag video | `brag-output/brag.mp4` on `main` |
 | Official domain / HTTPS | `arcfilmrental.com` live via Cloudflare tunnel |
 | Meta / copy brand string | `[YOUR BRAND]` is the hero brand and every public page title (`lib/rent/i18n.ts`) |
-| Business WhatsApp | Unset |
-| Owner email on hold | Not built |
+| Business WhatsApp | Set in live `rental_settings` (`9665…68`); reserve shows the wa.me button |
+| Owner alert on hold | Customer's WhatsApp button only. Omar chose WhatsApp over email/Telegram; no automatic alert |
 
 ## Open work
 
 1. Real photos for the last 3 pieces: GRP-0005 Grip package (own bundle), LGT-0079 Barkan (`/equipment/barkan.jpg` does not exist), LGT-0081 "Pipelight Pank 88" (real product name unclear). CAM-0019 uses a DZOFilm family shot; swap for a photo of the actual kit. Then chapter polish.
 2. Replace `[YOUR BRAND]` in meta/copy once the public name is final (logo files are in `public/`).
-3. Owner alert / email on new hold.
+3. Optional: automatic WhatsApp alert to Omar on every hold (Meta WhatsApp Cloud API: business verification, approved template, per-message fee). Not started; only if Omar asks.
 4. PCA gaps: durable rate limits (both limiters are in-process `Map`s), reserve idempotency, decimal money, audit trail.
 5. Hosting gaps (see `docs/HOSTING-BACKEND-PLAN.md`): HSTS, nightly offsite backup, uptime check, fix `scripts/barakat-redeploy-app.sh`.
 
 ## Next up, in order
 
 1. Omar's own photos for the 3 pieces above; chapter polish.
-2. Brand string + WhatsApp when Omar supplies them.
-3. Owner email on hold; then PCA and hosting hardening.
+2. Brand string when Omar supplies it.
+3. PCA and hosting hardening.
 
 ## Waiting on the user
 
 - Confirm public brand string (logo PNGs are in the repo).
-- WhatsApp business number when ready.
 
 ## Known problems
 
@@ -75,3 +74,4 @@ Last updated 27 Nov 2026, 9:10 PM Riyadh time, by Claude.
 - 27 Nov, 4:29 PM Riyadh: #35 merged (`8ce8f32`); first CI run green.
 - 27 Nov, 7:55 PM Riyadh: Docs drift check. Removed the stale Cursor/Barakat handoff docs; hosting plan status refreshed.
 - 27 Nov, 9:10 PM Riyadh: PR #31 closed. Live DB photos set for LGT-0080 (Antari), GRP-0018 (Matthews flag), GRP-0031 (bounce board, replaces trampoline), CAM-0019 (DZO family shot). All 4 kit pages show them; image URLs return 200.
+- 29 Nov: Business WhatsApp saved in live `rental_settings`. Read fresh on every reserve (`getPublicBusinessWhatsapp`), so no redeploy. Not tested with a real hold.
